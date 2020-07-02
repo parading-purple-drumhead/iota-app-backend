@@ -1,14 +1,22 @@
-image: google/cloud-sdk:alpine
+image: python:3.7.8-slim-buster
 
-deploy_production:
+test:
+  stage: test
+  script:
+    - pip install flake8
+    - flake8 --exclude .git,.vscode,virt,__pycache__
+
+deploy:
   stage: deploy
   environment: Production
   only:
-  - master
+    - master
   script:
-  - echo $SERVICE_ACCOUNT > /tmp/$CI_PIPELINE_ID.json
-  - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
-  - gcloud --quiet --project $PROJECT_ID app deploy app.yaml
-
-after_script:
-- rm /tmp/$CI_PIPELINE_ID.json
+    - echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+    - curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+    - apt-get update
+    - apt-get -qq -y install google-cloud-sdk
+    - echo $SERVICE_ACCOUNT > /tmp/$CI_PIPELINE_ID.json
+    - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+    - gcloud --quiet --project $PROJECT_ID app deploy app.yaml
+    - rm /tmp/$CI_PIPELINE_ID.json
