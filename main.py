@@ -27,42 +27,34 @@ class post(BaseModel):
 
 @app.post("/addPost")
 def addPost(post: post):
+
     try:
         doc_ref = db.collection(u"posts")
+        data = {
+            u"title": post.title,
+            u"type": post.type,
+            u"created_at": datetime.datetime.now(),
+            u"updated_at": datetime.datetime.now(),
+        }
         if post.post_type == "video":
-            doc_ref.add(
-                {
-                    u"title": post.title,
-                    u"type": post.post_type,
-                    u"created_at": datetime.datetime.now(),
-                    u"updated_at": datetime.datetime.now(),
-                    u"description": post.description,
-                    u"url": post.url,
-                    u"resource_url": post.resource_url,
-                }
-            )
+            data.update({
+                u"description": post.description,
+                u"url": post.url,
+                u"resource_url": post.resource_url,
+            })
         elif post.post_type == "article":
-            doc_ref.add(
-                {
-                    u"title": post.title,
-                    u"type": post.post_type,
-                    u"created_at": datetime.datetime.now(),
-                    u"updated_at": datetime.datetime.now(),
-                    u"content": post.content,
-                    u"resource_url": post.resource_url,
-                }
-            )
+            data.update({
+                u"content": post.content,
+                u"resource_url": post.resource_url,
+            })
         elif post.post_type == "quiz":
-            doc_ref.add(
-                {
-                    u"title": post.title,
-                    u"type": post.post_type,
-                    u"created_at": datetime.datetime.now(),
-                    u"updated_at": datetime.datetime.now(),
-                    u"questions": post.questions,
-                }
-            )
+            data.update({
+                u"questions": post.questions,
+            })
+
+        doc_ref.add(data)
         return {"status": True}
+
     except Exception as e:
         print(e)
         return {"status": False, "error": e}
