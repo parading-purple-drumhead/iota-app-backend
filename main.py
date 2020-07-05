@@ -32,7 +32,7 @@ def addPost(post: post):
         doc_ref = db.collection(u"posts")
         data = {
             u"title": post.title,
-            u"type": post.type,
+            u"type": post.post_type,
             u"created_at": datetime.datetime.now(),
             u"updated_at": datetime.datetime.now(),
         }
