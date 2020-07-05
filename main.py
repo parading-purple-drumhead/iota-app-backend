@@ -20,6 +20,9 @@ class post(BaseModel):
 class post_delete(BaseModel):
     post_id:str
 
+class course_delete(BaseModel):
+    course_id:str
+
 app = FastAPI()
 
 @app.post("/add_post")
@@ -40,6 +43,20 @@ def addPost(post:post):
 def deletPost(post_id:post_delete):
     try:
         db.collection(u"posts").document(post_id.post_id).delete()
+        return{
+            'status':True
+        }
+    except Exception as e:
+        print(e)
+        return{
+            'status':False,
+            'error':e
+        }
+
+@app.delete("/delete_course")
+def deleteCourse(course_id:course_delete):
+    try:
+        db.collection(u"courses").document(course_id.course_id).delete()
         return{
             'status':True
         }
