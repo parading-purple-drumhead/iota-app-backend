@@ -66,4 +66,3 @@ def addPost(post: post):
     except Exception as e:
         print(e)
         return {"status": False, "error": e}
-
