@@ -2,7 +2,6 @@ import firebase_admin
 from firebase_admin import firestore
 from firebase_admin import credentials
 from fastapi import FastAPI
-import pydantic
 from pydantic import BaseModel
 import datetime
 
