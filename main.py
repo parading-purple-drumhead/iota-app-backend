@@ -7,7 +7,6 @@ import models
 
 cred = credentials.Certificate("./serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
-
 db = firestore.client()
 
 app = FastAPI()
@@ -148,3 +147,26 @@ def deleteCourse(course_id: str):
             'error': e
         }
         return {"status": False, "error": e}
+
+
+@app.post("/editCourse")
+def course(course: models.course):
+    try:
+        edit = db.collection(u'courses').document(course.document)
+        edit.update({u'name': course.name})
+        edit.update({u'post': course.post})
+        edit.update({u'recommended_courses': course.recommended_courses})
+        edit.update({u'rating': course.rating})
+        edit.update({u'description': course.description})
+        edit.update({u'enrollment': course.enrollment})
+
+        return {
+            "status": True
+        }
+
+    except Exception as e:
+        print(e)
+        return {
+            "status": False,
+            "error": e
+        }
