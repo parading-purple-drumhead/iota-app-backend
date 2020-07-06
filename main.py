@@ -6,48 +6,33 @@ import datetime
 
 cred = credentials.Certificate("C:/Users/hp/Desktop/Dishyanth/project/iota app try/fastapi try/iotaapp-5076c-firebase-adminsdk-zbw8b-382bb019a3.json")
 firebase_admin.initialize_app(cred)
-
 db = firestore.client()
-
 app = FastAPI(debug = True)
 
-
-class post(BaseModel):
+class course(BaseModel):
 
     document:str 
-    post_type:str
-    title:str = None
-    url:str = None
-    resource_url:str = None
+    name:str = None
+    post:list = None
+    recommended_courses:list = None
+    rating:float = None
     description:str = None
-    content:str = None
-    questions:list = None
+    enrollment:int = None
+    
 
-
-
-@app.post("/post")
-async def post(post:post):
+@app.post("/course")
+async def course(course:course):
 
     try:
+        edit = db.collection(u'courses').document(course.document)
+        edit.update({u'name': course.name})
+        edit.update({u'post': course.post})
+        edit.update({u'recommended_courses': course.recommended_courses})
+        edit.update({u'rating': course.rating})
+        edit.update({u'description': course.description})
+        edit.update({u'enrollment': course.enrollment})
 
-        edit = db.collection(u'posts').document(post.document)
-        edit.update({u'title': post.title})
-        edit.update({u'updated_at': firestore.SERVER_TIMESTAMP})
-
-        if post.post_type == "video":
-
-            edit.update({u'description': post.description})
-            edit.update({u'resource_url': post.resource_url})
-            edit.update({u'url': post.url})
-
-        elif post.post_type == "article":
-
-            edit.update({u'content': post.content})
-            edit.update({u'resource_url': post.resource_url})
-
-        else:
-            edit.update({u'questions': post.questions})
         return{"message":"True"}
 
     except Exception as e:
-        return {"message":"False","Exception":e}
+        return {"message":"False","error":e}
