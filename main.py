@@ -12,42 +12,42 @@ db = firestore.client()
 app = FastAPI(debug = True)
 
 
-class editpost(BaseModel):
+class post(BaseModel):
 
-	document:str 
-	post_type:str
-	title:str = None
-	url:str = None
-	resource_url:str = None
-	description:str = None
-	content:str = None
-	questions:list = None
+    document:str 
+    post_type:str
+    title:str = None
+    url:str = None
+    resource_url:str = None
+    description:str = None
+    content:str = None
+    questions:list = None
 
 
 
-@app.post("/editpost")
-async def editpost(editpost:editpost):
+@app.post("/post")
+async def post(post:post):
 
-	try:
+    try:
 
-		edit = db.collection(u'posts').document(editpost.document)
-		edit.update({u'title': editpost.title})
-		edit.update({u'updated_at': firestore.SERVER_TIMESTAMP})
+        edit = db.collection(u'posts').document(post.document)
+        edit.update({u'title': post.title})
+        edit.update({u'updated_at': firestore.SERVER_TIMESTAMP})
 
-		if editpost.post_type == "video":
+        if post.post_type == "video":
 
-			edit.update({u'description': editpost.description})
-			edit.update({u'resource_url': editpost.resource_url})
-			edit.update({u'url': editpost.url})
+            edit.update({u'description': post.description})
+            edit.update({u'resource_url': post.resource_url})
+            edit.update({u'url': post.url})
 
-		elif editpost.post_type == "article":
+        elif post.post_type == "article":
 
-			edit.update({u'content': editpost.content})
-			edit.update({u'resource_url': editpost.resource_url})
+            edit.update({u'content': post.content})
+            edit.update({u'resource_url': post.resource_url})
 
-		else:
-			edit.update({u'questions': editpost.questions})
-		return{"message":"True"}
+        else:
+            edit.update({u'questions': post.questions})
+        return{"message":"True"}
 
-	except Exception as e:
-		return {"message":"False","Exception":e}
+    except Exception as e:
+        return {"message":"False","Exception":e}
