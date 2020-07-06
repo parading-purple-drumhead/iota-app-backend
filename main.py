@@ -25,6 +25,14 @@ class post(BaseModel):
     questions: list = None
 
 
+class user(BaseModel):
+    name: str
+    avatar: str
+    email: str
+    phone: int
+    points: int
+
+
 @app.post("/addPost")
 def addPost(post: post):
 
@@ -53,8 +61,43 @@ def addPost(post: post):
             })
 
         doc_ref.add(data)
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
         print(e)
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
+
+
+@app.delete("/deletePost")
+def deletePost(post_id: str):
+    try:
+        db.collection(u"posts").document(post_id).delete()
+        return {
+            'status': True
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'status': False,
+            'error': e
+        }
+
+
+@app.delete("/deleteCourse")
+def deleteCourse(course_id: str):
+    try:
+        db.collection(u"courses").document(course_id).delete()
+        return{
+            'status': True
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'status': False,
+            'error': e
+        }
