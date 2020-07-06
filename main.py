@@ -14,35 +14,12 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-class post(BaseModel):
-    title:str
-
-class post_delete(BaseModel):
-    post_id:str
-
-class course_delete(BaseModel):
-    course_id:str
-
 app = FastAPI()
 
-@app.post("/add_post")
-def addPost(post:post):
-    try:
-        db.collection(u"posts").add({u"title":post.title})
-        return{
-            'status':True
-        }
-    except Exception as e:
-        print(e)
-        return{
-            'status':False,
-            'error':e
-        }
-
 @app.delete("/delete_post")
-def deletPost(post_id:post_delete):
+def deletPost(post_id:str):
     try:
-        db.collection(u"posts").document(post_id.post_id).delete()
+        db.collection(u"posts").document(post_id).delete()
         return{
             'status':True
         }
@@ -54,9 +31,9 @@ def deletPost(post_id:post_delete):
         }
 
 @app.delete("/delete_course")
-def deleteCourse(course_id:course_delete):
+def deleteCourse(course_id:str):
     try:
-        db.collection(u"courses").document(course_id.course_id).delete()
+        db.collection(u"courses").document(course_id).delete()
         return{
             'status':True
         }
