@@ -2,8 +2,8 @@ import firebase_admin
 from firebase_admin import firestore
 from firebase_admin import credentials
 from fastapi import FastAPI
-from pydantic import BaseModel
 import datetime
+import models
 
 cred = credentials.Certificate("./serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
@@ -13,37 +13,8 @@ db = firestore.client()
 app = FastAPI()
 
 
-class post(BaseModel):
-    title: str
-    post_type: str
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
-    description: str = None
-    url: str = None
-    resource_url: str = None
-    content: str = None
-    questions: list = None
-
-
-class course(BaseModel):
-    description: str
-    enrollments: int
-    name: str
-    rating: float
-    posts: list = None
-    recommended_courses: list = None
-
-
-class user(BaseModel):
-    name: str
-    avatar: str
-    email: str
-    phone: int
-    points: int
-
-
 @app.post("/addPost")
-def addPost(post: post):
+def addPost(post: models.post):
     try:
         doc_ref = db.collection(u"posts")
         data = {
@@ -86,7 +57,7 @@ def addPost(post: post):
 
 
 @app.post("/editPost")
-def editPost(post: post):
+def editPost(post: models.post):
     try:
         edit = db.collection(u'posts').document(post.document)
         edit.update({u'title': post.title})
@@ -135,7 +106,7 @@ def deletePost(post_id: str):
 
 
 @app.post("/addCourse")
-def addCourse(course: course):
+def addCourse(course: models.course):
     try:
         doc_ref = db.collection(u"courses")
         data = {
