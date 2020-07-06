@@ -14,10 +14,17 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
+class user(BaseModel):
+    name: str
+    avatar: str
+    email: str
+    phone: int
+    points: int
+
 app = FastAPI()
 
 @app.delete("/delete_post")
-def deletPost(post_id:str):
+def deletePost(post_id:str):
     try:
         db.collection(u"posts").document(post_id).delete()
         return{
