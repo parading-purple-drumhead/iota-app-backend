@@ -25,6 +25,15 @@ class post(BaseModel):
     questions: list = None
 
 
+class course(BaseModel):
+    description: str
+    enrollments: int
+    name: str
+    rating: float
+    posts: list = None
+    recommended_courses: list = None
+
+
 class user(BaseModel):
     name: str
     avatar: str
@@ -39,7 +48,7 @@ def addPost(post: post):
         doc_ref = db.collection(u"posts")
         data = {
             u"title": post.title,
-            u"type": post.type,
+            u"type": post.post_type,
             u"created_at": datetime.datetime.now(),
             u"updated_at": datetime.datetime.now(),
         }
@@ -125,6 +134,33 @@ def deletePost(post_id: str):
         }
 
 
+@app.post("/addCourse")
+def addCourse(course: course):
+    try:
+        doc_ref = db.collection(u"courses")
+        data = {
+            "description": course.description,
+            "enrollments": 0,
+            "name": course.name,
+            "rating": 0,
+            "posts": course.posts,
+            "recommended_courses": course.recommended_courses
+        }
+
+        doc_ref.add(data)
+
+        return {
+            "status": True
+        }
+
+    except Exception as e:
+        print(e)
+        return {
+            "status": False,
+            "error": e
+        }
+
+
 @app.delete("/deleteCourse")
 def deleteCourse(course_id: str):
     try:
@@ -140,3 +176,4 @@ def deleteCourse(course_id: str):
             'status': False,
             'error': e
         }
+        return {"status": False, "error": e}
