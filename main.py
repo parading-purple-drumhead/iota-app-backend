@@ -42,12 +42,12 @@ def addPost(post: models.post):
 
         elif post.post_type == "article":
             data.update(
-                {u"content": post.content, u"resource_url": post.resource_url,}
+                {u"content": post.content, u"resource_url": post.resource_url}
             )
 
         elif post.post_type == "quiz":
             data.update(
-                {u"questions": post.questions,}
+                {u"questions": post.questions}
             )
 
         doc_ref.add(data)
