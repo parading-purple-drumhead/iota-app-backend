@@ -1,8 +1,7 @@
 import firebase_admin
-from firebase_admin import firestore
+from firebase_admin import firestore, auth
 from firebase_admin import credentials
 from fastapi import FastAPI
-import datetime
 import models
 
 cred = credentials.Certificate("./serviceAccountKey.json")
@@ -12,15 +11,27 @@ db = firestore.client()
 app = FastAPI()
 
 
+def tokenverify(safe):
+    decoded_token = auth.verify_id_token(safe)
+    uid = decoded_token["uid"]
+    return uid
+
+
 @app.post("/addPost")
 def addPost(post: models.post):
     try:
+        if tokenverify(post.token_sent) != post.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+                }
+
         doc_ref = db.collection(u"posts")
         data = {
             u"title": post.title,
             u"type": post.post_type,
-            u"created_at": datetime.datetime.now(),
-            u"updated_at": datetime.datetime.now(),
+            u"created_at": firestore.SERVER_TIMESTAMP,
+            u"updated_at": firestore.SERVER_TIMESTAMP,
         }
 
         if post.post_type == "video":
@@ -52,29 +63,35 @@ def addPost(post: models.post):
         return {
             "status": False,
             "error": e
-        }
+            }
 
 
 @app.post("/editPost")
 def editPost(post: models.post):
     try:
-        edit = db.collection(u'posts').document(post.document)
-        edit.update({u'title': post.title})
-        edit.update({u'updated_at': firestore.SERVER_TIMESTAMP})
+        if tokenverify(post.token_sent) != post.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
+
+        edit = db.collection(u"posts").document(post.post_id)
+        edit.update({u"title": post.title})
+        edit.update({u"updated_at": firestore.SERVER_TIMESTAMP})
 
         if post.post_type == "video":
 
-            edit.update({u'description': post.description})
-            edit.update({u'resource_url': post.resource_url})
-            edit.update({u'url': post.url})
+            edit.update({u"description": post.description})
+            edit.update({u"resource_url": post.resource_url})
+            edit.update({u"url": post.url})
 
         elif post.post_type == "article":
 
-            edit.update({u'content': post.content})
-            edit.update({u'resource_url': post.resource_url})
+            edit.update({u"content": post.content})
+            edit.update({u"resource_url": post.resource_url})
 
         else:
-            edit.update({u'questions': post.questions})
+            edit.update({u"questions": post.questions})
 
         return {
             "status": True
@@ -84,29 +101,42 @@ def editPost(post: models.post):
         return {
             "status": False,
             "error": e
-        }
+            }
 
 
 @app.delete("/deletePost")
-def deletePost(post_id: str):
+def deletePost(post: models.post):
     try:
-        db.collection(u"posts").document(post_id).delete()
+        if tokenverify(post.token_sent) != post.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+                }
+
+        db.collection(u"posts").document(post.post_id).delete()
 
         return {
-            'status': True
+            "status": True
         }
 
     except Exception as e:
         print(e)
         return {
-            'status': False,
-            'error': e
-        }
+            "status": False,
+            "error": e
+            }
 
 
 @app.post("/addCourse")
 def addCourse(course: models.course):
+
     try:
+        if tokenverify(course.token_sent) != course.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+                }
+
         doc_ref = db.collection(u"courses")
         data = {
             "description": course.description,
@@ -124,7 +154,6 @@ def addCourse(course: models.course):
         }
 
     except Exception as e:
-        print(e)
         return {
             "status": False,
             "error": e
@@ -132,33 +161,15 @@ def addCourse(course: models.course):
 
 
 @app.delete("/deleteCourse")
-def deleteCourse(course_id: str):
+def deleteCourse(course: models.course):
     try:
-        db.collection(u"courses").document(course_id).delete()
+        if tokenverify(course.token_sent) != course.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+                }
 
-        return {
-            'status': True
-        }
-
-    except Exception as e:
-        print(e)
-        return {
-            'status': False,
-            'error': e
-        }
-        return {"status": False, "error": e}
-
-
-@app.post("/editCourse")
-def course(course: models.course):
-    try:
-        edit = db.collection(u'courses').document(course.document)
-        edit.update({u'name': course.name})
-        edit.update({u'post': course.post})
-        edit.update({u'recommended_courses': course.recommended_courses})
-        edit.update({u'rating': course.rating})
-        edit.update({u'description': course.description})
-        edit.update({u'enrollment': course.enrollment})
+        db.collection(u"courses").document(course.course_id).delete()
 
         return {
             "status": True
@@ -170,3 +181,33 @@ def course(course: models.course):
             "status": False,
             "error": e
         }
+
+
+@app.post("/editCourse")
+def course(course: models.course):
+
+    try:
+        if tokenverify(course.token_sent) != course.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+                }
+
+        edit = db.collection(u"courses").document(course.course_id)
+        edit.update({u"name": course.name})
+        edit.update({u"post": course.posts})
+        edit.update({u"recommended_courses": course.recommended_courses})
+        edit.update({u"rating": course.rating})
+        edit.update({u"description": course.description})
+        edit.update({u"enrollments": course.enrollments})
+
+        return {
+            "status": True
+        }
+
+    except Exception as e:
+        print(e)
+        return {
+            "status": False,
+            "error": e
+            }
