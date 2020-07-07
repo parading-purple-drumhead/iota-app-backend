@@ -237,3 +237,38 @@ def getUserInfo(user: models.user):
             "status": False,
             "error": e
         }
+
+
+@app.post("/editInfo")
+def editInfo(user: models.user):
+
+    try:
+        if tokenverify(user.token_sent) != user.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
+
+        edit = db.collection(u"users").document(user.user_id)
+        if user.specific == "name":
+            edit.update({u"name": user.name})
+
+        if user.specific == "email":
+            edit.update({u"email": user.email})
+
+        if user.specific == "phone":
+            edit.update({u"phone": user.phone})
+
+        if user.specific == "avatar":
+            edit.update({u"avatar": user.avatar})
+
+        return {
+            "status": True
+        }
+
+    except Exception as e:
+        print(e)
+        return {
+            "status": False,
+            "error": e
+        }

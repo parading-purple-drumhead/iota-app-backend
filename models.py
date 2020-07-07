@@ -37,3 +37,5 @@ class user(BaseModel):
     points: int
     token_sent: str
     uid_sent: str
+    user_id: str
+    specific: str
