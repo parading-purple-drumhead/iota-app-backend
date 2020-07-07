@@ -21,7 +21,10 @@ def tokenverify(safe):
 def addPost(post: models.post):
     try:
         if tokenverify(post.token_sent) != post.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         doc_ref = db.collection(u"posts")
         data = {
@@ -32,38 +35,45 @@ def addPost(post: models.post):
         }
 
         if post.post_type == "video":
-            data.update(
-                {
-                    u"description": post.description,
-                    u"url": post.url,
-                    u"resource_url": post.resource_url,
-                }
-            )
+            data.update({
+                u"description": post.description,
+                u"url": post.url,
+                u"resource_url": post.resource_url,
+            })
 
         elif post.post_type == "article":
-            data.update(
-                {u"content": post.content, u"resource_url": post.resource_url}
-            )
+            data.update({
+                u"content": post.content,
+                u"resource_url": post.resource_url,
+            })
 
         elif post.post_type == "quiz":
-            data.update(
-                {u"questions": post.questions}
-            )
+            data.update({
+                u"questions": post.questions,
+            })
 
         doc_ref.add(data)
 
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
         print(e)
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
 
 
 @app.post("/editPost")
 def editPost(post: models.post):
     try:
         if tokenverify(post.token_sent) != post.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         edit = db.collection(u"posts").document(post.post_id)
         edit.update({u"title": post.title})
@@ -83,25 +93,38 @@ def editPost(post: models.post):
         else:
             edit.update({u"questions": post.questions})
 
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
 
 
 @app.delete("/deletePost")
 def deletePost(post: models.post):
     try:
         if tokenverify(post.token_sent) != post.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         db.collection(u"posts").document(post.post_id).delete()
 
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
         print(e)
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
 
 
 @app.post("/addCourse")
@@ -109,7 +132,10 @@ def addCourse(course: models.course):
 
     try:
         if tokenverify(course.token_sent) != course.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         doc_ref = db.collection(u"courses")
         data = {
@@ -118,30 +144,43 @@ def addCourse(course: models.course):
             "name": course.name,
             "rating": 0,
             "posts": course.posts,
-            "recommended_courses": course.recommended_courses,
+            "recommended_courses": course.recommended_courses
         }
 
         doc_ref.add(data)
 
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
 
 
 @app.delete("/deleteCourse")
 def deleteCourse(course: models.course):
     try:
         if tokenverify(course.token_sent) != course.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         db.collection(u"courses").document(course.course_id).delete()
 
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
         print(e)
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
 
 
 @app.post("/editCourse")
@@ -149,7 +188,10 @@ def course(course: models.course):
 
     try:
         if tokenverify(course.token_sent) != course.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         edit = db.collection(u"courses").document(course.course_id)
         edit.update({u"name": course.name})
@@ -159,11 +201,16 @@ def course(course: models.course):
         edit.update({u"description": course.description})
         edit.update({u"enrollments": course.enrollments})
 
-        return {"status": True}
+        return {
+            "status": True
+        }
 
     except Exception as e:
         print(e)
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
 
 
 @app.post("/userInfo")
@@ -171,13 +218,22 @@ def getUserInfo(user: models.user):
 
     try:
         if tokenverify(user.token_sent) != user.uid_sent:
-            return {"status": False, "error": "Not authenticated"}
+            return {
+                "status": False,
+                "error": "Not authenticated"
+            }
 
         doc_ref = db.collection(u"users").document(user.uid_sent)
         user = doc_ref.get()
         if user.exists:
-            return {"user": user.to_dict(), "status": True}
+            return {
+                "user": user.to_dict(),
+                "status": True
+            }
 
     except Exception as e:
         print(e)
-        return {"status": False, "error": e}
+        return {
+            "status": False,
+            "error": e
+        }
