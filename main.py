@@ -166,7 +166,7 @@ def course(course: models.course):
         return {"status": False, "error": e}
 
 
-@app.get("/userInfo")
+@app.post("/userInfo")
 def getUserInfo(user: models.user):
 
     try:
