@@ -24,7 +24,7 @@ def addPost(post: models.post):
             return {
                 "status": False,
                 "error": "Not authenticated"
-                }
+            }
 
         doc_ref = db.collection(u"posts")
         data = {
@@ -63,7 +63,7 @@ def addPost(post: models.post):
         return {
             "status": False,
             "error": e
-            }
+        }
 
 
 @app.post("/editPost")
@@ -101,7 +101,7 @@ def editPost(post: models.post):
         return {
             "status": False,
             "error": e
-            }
+        }
 
 
 @app.delete("/deletePost")
@@ -111,7 +111,7 @@ def deletePost(post: models.post):
             return {
                 "status": False,
                 "error": "Not authenticated"
-                }
+            }
 
         db.collection(u"posts").document(post.post_id).delete()
 
@@ -124,7 +124,7 @@ def deletePost(post: models.post):
         return {
             "status": False,
             "error": e
-            }
+        }
 
 
 @app.post("/addCourse")
@@ -135,7 +135,7 @@ def addCourse(course: models.course):
             return {
                 "status": False,
                 "error": "Not authenticated"
-                }
+            }
 
         doc_ref = db.collection(u"courses")
         data = {
@@ -167,7 +167,7 @@ def deleteCourse(course: models.course):
             return {
                 "status": False,
                 "error": "Not authenticated"
-                }
+            }
 
         db.collection(u"courses").document(course.course_id).delete()
 
@@ -191,7 +191,7 @@ def course(course: models.course):
             return {
                 "status": False,
                 "error": "Not authenticated"
-                }
+            }
 
         edit = db.collection(u"courses").document(course.course_id)
         edit.update({u"name": course.name})
@@ -210,4 +210,30 @@ def course(course: models.course):
         return {
             "status": False,
             "error": e
+        }
+
+
+@app.post("/userInfo")
+def getUserInfo(user: models.user):
+
+    try:
+        if tokenverify(user.token_sent) != user.uid_sent:
+            return {
+                "status": False,
+                "error": "Not authenticated"
             }
+
+        doc_ref = db.collection(u"users").document(user.uid_sent)
+        user = doc_ref.get()
+        if user.exists:
+            return {
+                "user": user.to_dict(),
+                "status": True
+            }
+
+    except Exception as e:
+        print(e)
+        return {
+            "status": False,
+            "error": e
+        }
