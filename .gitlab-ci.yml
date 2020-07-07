@@ -1,13 +1,13 @@
-image: google/cloud-sdk:slim
-
 test:
   stage: test
+  image: python:3.8.3-alpine
   script:
     - pip3 install flake8
     - flake8 --exclude .git,.vscode,virt,__pycache__
 
 deploy:
   stage: deploy
+  image: google/cloud-sdk:slim
   environment: Production
   only:
     - master
