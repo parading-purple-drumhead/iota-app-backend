@@ -10,7 +10,7 @@ deploy:
   image: google/cloud-sdk:slim
   environment: Production
   only:
-    - master
+    - master@iot-alliance/iota-app/iota-app-backend
   script:
     - echo $SERVICE_ACCOUNT > /tmp/$CI_PIPELINE_ID.json
     - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
