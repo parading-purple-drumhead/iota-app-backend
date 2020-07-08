@@ -1,19 +1,13 @@
 from fastapi import APIRouter
-from firebase_admin import auth, firestore
-from routers import models
-from routers import db
+from firebase_admin import firestore
+from models import post
+from routers import db, tokenverify
 
 router = APIRouter()
 
 
-def tokenverify(safe):
-    decoded_token = auth.verify_id_token(safe)
-    uid = decoded_token["uid"]
-    return uid
-
-
 @router.post("/add")
-def addPost(post: models.post):
+def addPost(post: post):
     try:
         if tokenverify(post.token_sent) != post.uid_sent:
             return {
@@ -62,7 +56,7 @@ def addPost(post: models.post):
 
 
 @router.post("/edit")
-def editPost(post: models.post):
+def editPost(post: post):
     try:
         if tokenverify(post.token_sent) != post.uid_sent:
             return {
@@ -100,7 +94,7 @@ def editPost(post: models.post):
 
 
 @router.delete("/delete")
-def deletePost(post: models.post):
+def deletePost(post: post):
     try:
         if tokenverify(post.token_sent) != post.uid_sent:
             return {

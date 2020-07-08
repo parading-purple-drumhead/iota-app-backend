@@ -1,19 +1,12 @@
 from fastapi import APIRouter
-from firebase_admin import auth
-from routers import models
-from routers import db
+from models import course
+from routers import db, tokenverify
 
 router = APIRouter()
 
 
-def tokenverify(safe):
-    decoded_token = auth.verify_id_token(safe)
-    uid = decoded_token["uid"]
-    return uid
-
-
 @router.post("/add")
-def addCourse(course: models.course):
+def addCourse(course: course):
 
     try:
         if tokenverify(course.token_sent) != course.uid_sent:
@@ -46,7 +39,7 @@ def addCourse(course: models.course):
 
 
 @router.post("/edit")
-def editCourse(course: models.course):
+def editCourse(course: course):
 
     try:
         if tokenverify(course.token_sent) != course.uid_sent:
@@ -76,7 +69,7 @@ def editCourse(course: models.course):
 
 
 @router.delete("/delete")
-def deleteCourse(course: models.course):
+def deleteCourse(course: course):
     try:
         if tokenverify(course.token_sent) != course.uid_sent:
             return {
