@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from models import Course
+from typing import Dict
 from routers import db
 
 router = APIRouter()
 
 
-@router.get("")
+@router.get("", response_model=Dict[str, Course])
 def get_all_courses():
     try:
         courses_ref = db.collection(u"courses").stream()
@@ -46,7 +47,7 @@ def edit_course(course_id, course: Course):
     try:
 
         doc_ref = db.collection(u"courses").document(course_id)
-        doc_ref.update(dict(course))
+        doc_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
 
     except Exception as e:
         print(e)

@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException
 from models import Post
+from typing import Dict
 from routers import db
+import datetime
 
 router = APIRouter()
 
 
-@router.get("")
+@router.get("", response_model=Dict[str, Post])
 def get_all_posts():
     try:
         posts_ref = db.collection(u"posts").stream()
@@ -34,7 +36,7 @@ def get_post(post_id):
 def add_post(post: Post):
     try:
         doc_ref = db.collection(u"posts")
-        doc_ref.add(post)
+        doc_ref.add(dict(post))
 
     except Exception as e:
         print(e)
@@ -45,7 +47,14 @@ def add_post(post: Post):
 def edit_post(post_id, post: Post):
     try:
         edit = db.collection(u"posts").document(post_id)
-        edit.update(post)
+        newData = post.dict(exclude_none=True, exclude_defaults=True)
+
+        if "created_at" or "updated_at" in newData:
+            raise Exception()
+
+        newData["updated_at"] = datetime.datetime.now()
+
+        edit.update(newData)
 
     except Exception as e:
         print(e)
