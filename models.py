@@ -1,20 +1,18 @@
 from pydantic import BaseModel
+from typing import Optional, Literal
 import datetime
 
 
-class post(BaseModel):
+class Post(BaseModel):
     title: str
-    post_type: str
-    created_at: datetime.datetime = None
-    updated_at: datetime.datetime = None
-    description: str = None
-    url: str = None
-    resource_url: str = None
-    content: str = None
-    questions: list = None
-    token_sent: str
-    uid_sent: str
-    post_id: str = None
+    type: Literal['article', 'quiz', 'video']
+    created_at: datetime.datetime = datetime.datetime.now()
+    updated_at: datetime.datetime = datetime.datetime.now()
+    description: Optional[str]
+    url: Optional[str]
+    resource_url: Optional[str]
+    content: Optional[str]
+    questions: Optional[str]
 
 
 class course(BaseModel):

@@ -1,116 +1,62 @@
-from fastapi import APIRouter
-from firebase_admin import firestore
-from models import post
-from routers import db, tokenverify
+from fastapi import APIRouter, HTTPException
+from models import Post
+from routers import db
 
 router = APIRouter()
 
 
+@router.get("")
+def get_all_posts():
+    try:
+        posts_ref = db.collection(u"posts").stream()
+        data = {}
+        for post in posts_ref:
+            data[post.id] = post.to_dict()
+        return data
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{post_id}", response_model=Post)
+def get_post(post_id):
+    try:
+        post = db.collection(u"posts").document(post_id).get().to_dict()
+        return post
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=e)
+
+
 @router.post("/add")
-def addPost(post: post):
+def add_post(post: Post):
     try:
-        if tokenverify(post.token_sent) != post.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
-
         doc_ref = db.collection(u"posts")
-        data = {
-            u"title": post.title,
-            u"type": post.post_type,
-            u"created_at": firestore.SERVER_TIMESTAMP,
-            u"updated_at": firestore.SERVER_TIMESTAMP,
-        }
-
-        if post.post_type == "video":
-            data.update({
-                u"description": post.description,
-                u"url": post.url,
-                u"resource_url": post.resource_url,
-            })
-
-        elif post.post_type == "article":
-            data.update({
-                u"content": post.content,
-                u"resource_url": post.resource_url,
-            })
-
-        elif post.post_type == "quiz":
-            data.update({
-                u"questions": post.questions,
-            })
-
-        doc_ref.add(data)
-
-        return {
-            "status": True
-        }
+        doc_ref.add(post)
 
     except Exception as e:
         print(e)
-        return {
-            "status": False,
-            "error": e
-        }
+        raise HTTPException(status_code=400, detail=e)
 
 
-@router.post("/edit")
-def editPost(post: post):
+@router.put("/{post_id}")
+def edit_post(post_id, post: Post):
     try:
-        if tokenverify(post.token_sent) != post.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
-
-        edit = db.collection(u"posts").document(post.post_id)
-        edit.update({u"title": post.title})
-        edit.update({u"updated_at": firestore.SERVER_TIMESTAMP})
-
-        if post.post_type == "video":
-
-            edit.update({u"description": post.description})
-            edit.update({u"resource_url": post.resource_url})
-            edit.update({u"url": post.url})
-
-        elif post.post_type == "article":
-
-            edit.update({u"content": post.content})
-            edit.update({u"resource_url": post.resource_url})
-
-        else:
-            edit.update({u"questions": post.questions})
-
-        return {
-            "status": True
-        }
-
-    except Exception as e:
-        return {
-            "status": False,
-            "error": e
-        }
-
-
-@router.delete("/delete")
-def deletePost(post: post):
-    try:
-        if tokenverify(post.token_sent) != post.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
-
-        db.collection(u"posts").document(post.post_id).delete()
-
-        return {
-            "status": True
-        }
+        edit = db.collection(u"posts").document(post_id)
+        edit.update(post)
 
     except Exception as e:
         print(e)
-        return {
-            "status": False,
-            "error": e
-        }
+        raise HTTPException(status_code=400, detail=e)
+
+
+@router.delete("/{post_id}")
+def delete_post(post_id):
+    try:
+        db.collection(u"posts").document(post_id).delete()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=e)
