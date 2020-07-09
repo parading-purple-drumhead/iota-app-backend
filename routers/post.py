@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException
 from models import Post
 from typing import Dict
 from routers import db
-import datetime
+from datetime import datetime
+from pytz import timezone
 
 router = APIRouter()
 
@@ -52,7 +53,7 @@ def edit_post(post_id, post: Post):
         if "created_at" or "updated_at" in new_data:
             raise Exception()
 
-        new_data["updated_at"] = datetime.datetime.now()
+        new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
 
         edit.update(new_data)
 

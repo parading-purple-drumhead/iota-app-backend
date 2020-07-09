@@ -1,14 +1,15 @@
 from pydantic import BaseModel
 from typing import Optional, Literal, List
 from pydantic import AnyUrl, EmailStr
-import datetime
+from datetime import datetime
+from pytz import timezone
 
 
 class Post(BaseModel):
     title: Optional[str]
     type: Optional[Literal["article", "quiz", "video"]]
-    created_at: datetime.datetime = datetime.datetime.now()
-    updated_at: datetime.datetime = datetime.datetime.now()
+    created_at: datetime = datetime.now(timezone("Asia/Kolkata"))
+    updated_at: datetime = datetime.now(timezone("Asia/Kolkata"))
     description: Optional[str]
     url: Optional[str]
     resource_url: Optional[AnyUrl]
