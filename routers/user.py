@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.get("/{user_id}")
-def get_userInfo(user_id):
+def get_user_info(user_id):
 
     try:
         user = db.collection(u"users").document(user_id).get().to_dict()
@@ -28,7 +28,7 @@ def edit_user(user_id, user: User):
 
 
 @router.post("/{user_id}/add")
-def add_post(user_id, user: User):
+def add_user(user_id, user: User):
     try:
         doc_ref = db.collection(u"users")
         doc_ref.add(dict(user), document_id=user_id)
