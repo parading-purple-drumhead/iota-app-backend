@@ -39,7 +39,7 @@ async def verify_token(request: Request, call_next):
         if request.url.path not in exclude:
             token = request.headers.get('token')
             uid = request.headers.get('uid')
-            if auth.verify_id_token(token).uid != uid:
+            if auth.verify_id_token(token)["uid"] != uid:
                 raise Exception()
 
         response = await call_next(request)
