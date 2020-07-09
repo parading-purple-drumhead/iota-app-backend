@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing_extensions import Literal
+from typing import Optional
 import datetime
 
 
@@ -27,11 +28,9 @@ class course(BaseModel):
     course_id: str = None
 
 
-class user(BaseModel):
+class User(BaseModel):
     name: str
-    avatar: str
+    avatar: Optional[str]
     email: str
-    phone: int
-    points: int
-    token_sent: str
-    uid_sent: str
+    phone: Optional[int]
+    points: int = 0
