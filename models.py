@@ -6,7 +6,7 @@ import datetime
 
 class Post(BaseModel):
     title: Optional[str]
-    type: Optional[Literal['article', 'quiz', 'video']]
+    type: Optional[Literal["article", "quiz", "video"]]
     created_at: datetime.datetime = datetime.datetime.now()
     updated_at: datetime.datetime = datetime.datetime.now()
     description: Optional[str]

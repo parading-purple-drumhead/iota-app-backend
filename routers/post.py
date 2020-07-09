@@ -47,14 +47,14 @@ def add_post(post: Post):
 def edit_post(post_id, post: Post):
     try:
         edit = db.collection(u"posts").document(post_id)
-        newData = post.dict(exclude_none=True, exclude_defaults=True)
+        new_data = post.dict(exclude_none=True, exclude_defaults=True)
 
-        if "created_at" or "updated_at" in newData:
+        if "created_at" or "updated_at" in new_data:
             raise Exception()
 
-        newData["updated_at"] = datetime.datetime.now()
+        new_data["updated_at"] = datetime.datetime.now()
 
-        edit.update(newData)
+        edit.update(new_data)
 
     except Exception as e:
         print(e)

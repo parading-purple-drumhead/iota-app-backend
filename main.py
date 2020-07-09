@@ -34,11 +34,11 @@ app = FastAPI(
 @app.middleware("http")
 async def verify_token(request: Request, call_next):
     try:
-        exclude = ['/docs', '/openapi.json']
+        exclude = ["/docs", "/openapi.json"]
 
         if request.url.path not in exclude:
-            token = request.headers.get('token')
-            uid = request.headers.get('uid')
+            token = request.headers.get("token")
+            uid = request.headers.get("uid")
             if auth.verify_id_token(token)["uid"] != uid:
                 raise Exception()
 
