@@ -45,4 +45,3 @@ def delete_user(user_id):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
-    
