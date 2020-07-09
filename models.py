@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 import datetime
 
 
@@ -15,16 +15,13 @@ class Post(BaseModel):
     questions: Optional[str]
 
 
-class course(BaseModel):
-    description: str = None
-    enrollments: int = None
-    name: str = None
-    rating: float = None
-    posts: list = None
-    recommended_courses: list = None
-    token_sent: str
-    uid_sent: str
-    course_id: str = None
+class Course(BaseModel):
+    description: Optional[str]
+    enrollments: Optional[int]
+    name: Optional[str]
+    rating: Optional[float]
+    posts: List[str] = []
+    recommended_courses: List[str] = []
 
 
 class user(BaseModel):
