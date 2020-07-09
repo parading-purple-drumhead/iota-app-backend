@@ -1,31 +1,27 @@
-from fastapi import APIRouter
-from models import user
+from fastapi import APIRouter, HTTPException
+from models import User
 from routers import db, tokenverify
 
 router = APIRouter()
 
-
-@router.post("/getInfo")
-def getUserInfo(user: user):
+@router.get("/{user_id}")
+def get_userInfo(user_id):
 
     try:
-        if tokenverify(user.token_sent) != user.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
-
-        doc_ref = db.collection(u"users").document(user.uid_sent)
-        user = doc_ref.get()
-        if user.exists:
-            return {
-                "user": user.to_dict(),
-                "status": True
-            }
+        user = db.collection(u"users").document(user_id).get().to_dict()
+        return user
 
     except Exception as e:
         print(e)
-        return {
-            "status": False,
-            "error": e
-        }
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/add")
+def add_post(user: User):
+    try:
+        print("new test here")
+        doc_ref =  db.collection(u"users")
+        doc_ref.add(dict(user))
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))

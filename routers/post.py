@@ -27,7 +27,7 @@ def get_post(post_id):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/add")
@@ -38,7 +38,7 @@ def add_post(post: Post):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.put("/{post_id}")
@@ -49,7 +49,7 @@ def edit_post(post_id, post: Post):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete("/{post_id}")
@@ -59,4 +59,4 @@ def delete_post(post_id):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
