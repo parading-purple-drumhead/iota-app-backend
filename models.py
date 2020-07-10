@@ -17,6 +17,12 @@ class Post(BaseModel):
     questions: Optional[List[str]] = []
 
 
+class Badge(BaseModel):
+    image: Optional[str]
+    name: Optional[str]
+    requirement: Optional[str]
+
+
 class Course(BaseModel):
     description: Optional[str]
     enrollments: Optional[int] = 0
