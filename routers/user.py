@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from models import User
 from routers import db
+from google.api_core.exceptions import AlreadyExists
 
 router = APIRouter()
 
@@ -32,6 +33,9 @@ def add_user(user_id, user: User):
     try:
         doc_ref = db.collection(u"users")
         doc_ref.add(dict(user), document_id=user_id)
+
+    except AlreadyExists as e:
+        print(e)
 
     except Exception as e:
         print(e)
