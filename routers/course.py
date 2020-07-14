@@ -28,7 +28,7 @@ def get_course(course_id):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/add")
@@ -51,7 +51,7 @@ def edit_course(course_id, course: Course):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete("/{course_id}")
