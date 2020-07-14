@@ -25,7 +25,7 @@ class Badge(BaseModel):
 
 class Course(BaseModel):
     description: Optional[str]
-    enrollments: Optional[int] = 0
+    enrollments: Optional[List[str]] = []
     name: Optional[str]
     rating: Optional[float] = 0.0
     posts: Optional[List[str]] = []
