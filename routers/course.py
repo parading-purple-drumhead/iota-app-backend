@@ -1,91 +1,66 @@
-from fastapi import APIRouter
-from models import course
-from routers import db, tokenverify
+from fastapi import APIRouter, HTTPException
+from models import Course
+from typing import Dict
+from routers import db
 
 router = APIRouter()
 
 
+@router.get("", response_model=Dict[str, Course])
+def get_all_courses():
+    try:
+        courses_ref = db.collection(u"courses").stream()
+        data = {}
+        for course in courses_ref:
+            data[course.id] = course.to_dict()
+        return data
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{course_id}", response_model=Course)
+def get_course(course_id):
+    try:
+        course = db.collection(u"courses").document(course_id).get().to_dict()
+        return course
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/add")
-def addCourse(course: course):
-
+def add_course(course: Course):
     try:
-        if tokenverify(course.token_sent) != course.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
-
-        doc_ref = db.collection(u"courses")
-        data = {
-            "description": course.description,
-            "enrollments": 0,
-            "name": course.name,
-            "rating": 0,
-            "posts": course.posts,
-            "recommended_courses": course.recommended_courses
-        }
-
-        doc_ref.add(data)
-
-        return {
-            "status": True
-        }
-
-    except Exception as e:
-        return {
-            "status": False,
-            "error": e
-        }
-
-
-@router.post("/edit")
-def editCourse(course: course):
-
-    try:
-        if tokenverify(course.token_sent) != course.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
-
-        edit = db.collection(u"courses").document(course.course_id)
-        edit.update({u"name": course.name})
-        edit.update({u"post": course.posts})
-        edit.update({u"recommended_courses": course.recommended_courses})
-        edit.update({u"rating": course.rating})
-        edit.update({u"description": course.description})
-        edit.update({u"enrollments": course.enrollments})
-
-        return {
-            "status": True
-        }
+        courses_ref = db.collection(u"courses")
+        courses_ref.add(dict(course))
 
     except Exception as e:
         print(e)
-        return {
-            "status": False,
-            "error": e
-        }
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/delete")
-def deleteCourse(course: course):
+@router.put("/{course_id}")
+def edit_course(course_id, course: Course):
     try:
-        if tokenverify(course.token_sent) != course.uid_sent:
-            return {
-                "status": False,
-                "error": "Not authenticated"
-            }
 
-        db.collection(u"courses").document(course.course_id).delete()
-
-        return {
-            "status": True
-        }
+        doc_ref = db.collection(u"courses").document(course_id)
+        doc_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
 
     except Exception as e:
         print(e)
-        return {
-            "status": False,
-            "error": e
-        }
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/{course_id}")
+def delete_course(course_id):
+    try:
+
+        doc_ref = db.collection(u"courses").document(course_id)
+        doc_ref.delete()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=e)
