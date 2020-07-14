@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from datetime import datetime, date
-from typing import Optional, List, Dict,Literal
+from datetime import datetime
+from typing import Optional, List, Dict, Literal
 from pydantic import AnyUrl, EmailStr
 from pytz import timezone
 
@@ -42,4 +42,4 @@ class User(BaseModel):
     joined: datetime = datetime.now(timezone("Asia/Kolkata"))
     badge: Optional[List[str]] = []
     bookmarks: Optional[List[str]] = []
-    activity: Optional[Dict[str, int]]= None
+    activity: Optional[Dict[str, int]] = None
