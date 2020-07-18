@@ -55,7 +55,7 @@ def edit_post(post_id, post: Post):
 
         new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
 
-        edit.update(new_data)
+        edit.update(dict(new_data))
 
     except Exception as e:
         print(e)
@@ -78,7 +78,7 @@ def post_comment(post_id, post: Post):
         edit = db.collection(u"posts").document(post_id)
         new_data = post.dict(exclude_none=True, exclude_defaults=True)
 
-        edit.update(new_data)
+        edit.update(dict(new_data))
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
