@@ -63,4 +63,4 @@ def delete_course(course_id):
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=400, detail=e)
+        raise HTTPException(status_code=400, detail=str(e))

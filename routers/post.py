@@ -1,11 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from models import Post
+from typing import Dict
 from routers import db
+from datetime import datetime
+from pytz import timezone
 
 router = APIRouter()
 
 
-@router.get("")
+@router.get("", response_model=Dict[str, Post])
 def get_all_posts():
     try:
         posts_ref = db.collection(u"posts").stream()
@@ -34,7 +37,7 @@ def get_post(post_id):
 def add_post(post: Post):
     try:
         doc_ref = db.collection(u"posts")
-        doc_ref.add(post)
+        doc_ref.add(dict(post))
 
     except Exception as e:
         print(e)
@@ -45,7 +48,14 @@ def add_post(post: Post):
 def edit_post(post_id, post: Post):
     try:
         edit = db.collection(u"posts").document(post_id)
-        edit.update(post)
+        new_data = post.dict(exclude_none=True, exclude_defaults=True)
+
+        if "created_at" or "updated_at" in new_data:
+            raise Exception()
+
+        new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
+
+        edit.update(new_data)
 
     except Exception as e:
         print(e)
@@ -57,6 +67,17 @@ def delete_post(post_id):
     try:
         db.collection(u"posts").document(post_id).delete()
 
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/{post_id}/comment")
+def post_comment(post_id, post: Post):
+    try:
+        edit = db.collection(u"posts").document(post_id)
+        new_data = post.dict(exclude_none=True, exclude_defaults=True)
+
+        edit.update(new_data)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
