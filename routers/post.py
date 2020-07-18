@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from models import Post
+from models import Post, Comment
 from typing import Dict
 from routers import db
 from datetime import datetime
@@ -50,7 +50,7 @@ def edit_post(post_id, post: Post):
         edit = db.collection(u"posts").document(post_id)
         new_data = post.dict(exclude_none=True, exclude_defaults=True)
 
-        if "created_at" or "updated_at" in new_data:
+        if "created_at" in new_data or "updated_at" in new_data:
             raise Exception()
 
         new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
@@ -73,12 +73,11 @@ def delete_post(post_id):
 
 
 @router.post("/{post_id}/comment")
-def post_comment(post_id, post: Post):
+def post_comment(post_id, comment: Comment):
     try:
-        edit = db.collection(u"posts").document(post_id)
-        new_data = post.dict(exclude_none=True, exclude_defaults=True)
+        doc_ref = db.collection(u"posts").document(post_id).collection(u"comments")
 
-        edit.update(dict(new_data))
+        doc_ref.add(dict(comment))
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))

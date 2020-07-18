@@ -20,7 +20,7 @@ class Post(BaseModel):
     resource_url: Optional[AnyUrl]
     content: Optional[str]
     questions: Optional[List[str]] = []
-    comments: Optional[Dict[str, Comment]]
+    comments: Optional[Comment]
 
 
 class Badge(BaseModel):
