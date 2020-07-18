@@ -73,7 +73,7 @@ def delete_post(post_id):
 
 
 @router.post("/{post_id}/comment")
-def post_comment(post_id, comment: Comment):
+def add_comment(post_id, comment: Comment):
     try:
         doc_ref = db.collection(u"posts").document(post_id).collection(u"comments")
 
@@ -81,3 +81,9 @@ def post_comment(post_id, comment: Comment):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# @router.put("/{post_id}/comment/{comment_id}")
+# def edit_comment(post_id, comment_id, comment:Comment):
+#     try:
+
