@@ -17,7 +17,7 @@ class Post(BaseModel):
     updated_at: datetime = datetime.now(timezone("Asia/Kolkata"))
     description: Optional[str]
     url: Optional[str]
-    resource_url: Optional[str]
+    resource_url: Optional[AnyUrl]
     content: Optional[str]
     questions: Optional[List[str]] = []
     comments: Optional[Dict[str, Comment]]
