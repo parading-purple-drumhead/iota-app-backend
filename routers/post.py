@@ -71,6 +71,7 @@ def delete_post(post_id):
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.post("/{post_id}/comment")
 def post_comment(post_id, post: Post):
     try:
