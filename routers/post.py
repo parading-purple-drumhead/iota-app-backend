@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from models import Post, Comment
-from typing import Dict, Optional
+from typing import Dict
 from routers import db
 from datetime import datetime
 from pytz import timezone
