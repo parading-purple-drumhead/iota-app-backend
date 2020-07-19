@@ -43,3 +43,10 @@ class User(BaseModel):
     badge: Optional[List[str]] = []
     bookmarks: Optional[List[str]] = []
     activity: Optional[Dict[str, int]] = None
+
+
+class Question(BaseModel):
+    question: Optional[str]
+    option: Optional[Dict[str, str]]
+    answer: Optional[List[str]]
+    difficulty: Optional[str]
