@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header, Response, Request
+from fastapi import APIRouter, HTTPException, Request
 from models import Post, Comment
 from typing import Dict, Optional
 from routers import db
@@ -75,25 +75,25 @@ def delete_post(post_id):
 @router.post("/{post_id}/comment")
 def add_comment(post_id, comment: Comment):
     try:
-        doc_ref = db.collection(u"posts").document(post_id).collection(u"comments")
+        doc_ref = db.collection(u"posts")
+        doc = doc_ref.document(post_id).collection(u"comments")
 
-        doc_ref.add(dict(comment))
+        doc.add(dict(comment))
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.put("/{post_id}/comment/{comment_id}")
-def edit_comment(post_id, comment_id, comment:Comment, request: Request):
+def edit_comment(post_id, comment_id, comment: Comment, request: Request):
     try:
         doc_ref = db.collection(u"posts").document(post_id)
-        doc = doc_ref.collection(u"comment").document(comment_id).get().to_dict()
+        doc = doc_ref.collection(u"comment").document(comment_id)
+        doc_get = doc.get().to_dict()
         uid = request.headers.get("uid")
-        if doc["user_id"] == uid:
-            doc1 = db.collection(u"posts").document(post_id)
-            doc_ref1 = doc1.collection(u"comment").document(comment_id)
+        if doc_get["user_id"] == uid:
             new_data = comment.dict(exclude_none=True, exclude_defaults=True)
-            doc_ref1.update(new_data)
+            doc.update(new_data)
         else:
             raise Exception()
     except Exception as e:
@@ -105,10 +105,11 @@ def edit_comment(post_id, comment_id, comment:Comment, request: Request):
 def delete_comment(post_id, comment_id, request: Request):
     try:
         doc_ref = db.collection(u"posts").document(post_id)
-        doc = doc_ref.collection(u"comment").document(comment_id).get().to_dict()
+        doc = doc_ref.collection(u"comment").document(comment_id)
+        doc_get = doc.get().to_dict()
         uid = request.headers.get("uid")
-        if doc["user_id"] == uid:
-            db.collection(u"posts").document(post_id).collection(u"comment").document(comment_id).delete()
+        if doc_get["user_id"] == uid:
+            doc.delete()
         else:
             raise Exception()
     except Exception as e:
