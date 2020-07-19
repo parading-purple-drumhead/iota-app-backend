@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header, Response, Request
 from models import Post, Comment
-from typing import Dict
+from typing import Dict, Optional
 from routers import db
 from datetime import datetime
 from pytz import timezone
@@ -83,7 +83,34 @@ def add_comment(post_id, comment: Comment):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# @router.put("/{post_id}/comment/{comment_id}")
-# def edit_comment(post_id, comment_id, comment:Comment):
-#     try:
+@router.put("/{post_id}/comment/{comment_id}")
+def edit_comment(post_id, comment_id, comment:Comment, request: Request):
+    try:
+        doc_ref = db.collection(u"posts").document(post_id)
+        doc = doc_ref.collection(u"comment").document(comment_id).get().to_dict()
+        uid = request.headers.get("uid")
+        if doc["user_id"] == uid:
+            doc1 = db.collection(u"posts").document(post_id)
+            doc_ref1 = doc1.collection(u"comment").document(comment_id)
+            new_data = comment.dict(exclude_none=True, exclude_defaults=True)
+            doc_ref1.update(new_data)
+        else:
+            raise Exception()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
 
+
+@router.delete("/{post_id}/comment/{comment_id}")
+def delete_comment(post_id, comment_id, request: Request):
+    try:
+        doc_ref = db.collection(u"posts").document(post_id)
+        doc = doc_ref.collection(u"comment").document(comment_id).get().to_dict()
+        uid = request.headers.get("uid")
+        if doc["user_id"] == uid:
+            db.collection(u"posts").document(post_id).collection(u"comment").document(comment_id).delete()
+        else:
+            raise Exception()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
