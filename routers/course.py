@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from models import Course
 from typing import Dict
 from routers import db
@@ -32,10 +32,14 @@ def get_course(course_id):
 
 
 @router.post("/add")
-def add_course(course: Course):
+def add_course(course: Course, request: Request):
     try:
-        courses_ref = db.collection(u"courses")
-        courses_ref.add(dict(course))
+        uid = request.headers.get("uid")
+        doc = db.collection(u"users").document(uid).get().to_dict()
+        if doc["admin"] == True:
+            courses_ref = db.collection(u"courses")
+            courses_ref.add(dict(course))
+        raise Exception()
 
     except Exception as e:
         print(e)
@@ -43,11 +47,14 @@ def add_course(course: Course):
 
 
 @router.put("/{course_id}")
-def edit_course(course_id, course: Course):
+def edit_course(course_id, course: Course, request: Request):
     try:
-
-        doc_ref = db.collection(u"courses").document(course_id)
-        doc_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
+        uid = request.headers.get("uid")
+        doc = db.collection(u"users").document(uid).get().to_dict()
+        if doc["admin"] == True:
+            doc_ref = db.collection(u"courses").document(course_id)
+            doc_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
+        raise Exception()
 
     except Exception as e:
         print(e)
@@ -55,11 +62,14 @@ def edit_course(course_id, course: Course):
 
 
 @router.delete("/{course_id}")
-def delete_course(course_id):
+def delete_course(course_id, request: Request):
     try:
-
-        doc_ref = db.collection(u"courses").document(course_id)
-        doc_ref.delete()
+        uid = request.headers.get("uid")
+        doc = db.collection(u"users").document(uid).get().to_dict()
+        if doc["admin"] == True:
+            doc_ref = db.collection(u"courses").document(course_id)
+            doc_ref.delete()
+        raise Exception()
 
     except Exception as e:
         print(e)

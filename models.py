@@ -41,6 +41,7 @@ class Course(BaseModel):
 class User(BaseModel):
     name: Optional[str]
     avatar: Optional[str]
+    admin: Optional[bool]
     email: Optional[EmailStr]
     phone: Optional[int]
     points: Optional[int] = 0
