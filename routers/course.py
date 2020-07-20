@@ -36,7 +36,7 @@ def add_course(course: Course, request: Request):
     try:
         uid = request.headers.get("uid")
         doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"] == True:
+        if doc["admin"]:
             courses_ref = db.collection(u"courses")
             courses_ref.add(dict(course))
         raise Exception()
@@ -50,10 +50,10 @@ def add_course(course: Course, request: Request):
 def edit_course(course_id, course: Course, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"] == True:
-            doc_ref = db.collection(u"courses").document(course_id)
-            doc_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
+        doc_ref = db.collection(u"users").document(uid).get().to_dict()
+        if doc_ref["admin"]:
+            doc = db.collection(u"courses").document(course_id)
+            doc.update(course.dict(exclude_none=True, exclude_defaults=True))
         raise Exception()
 
     except Exception as e:
@@ -66,7 +66,7 @@ def delete_course(course_id, request: Request):
     try:
         uid = request.headers.get("uid")
         doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"] == True:
+        if doc["admin"]:
             doc_ref = db.collection(u"courses").document(course_id)
             doc_ref.delete()
         raise Exception()

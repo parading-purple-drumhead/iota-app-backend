@@ -38,7 +38,7 @@ def add_post(post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
         doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"] == True:
+        if doc["admin"]:
             doc_ref = db.collection(u"posts")
             doc_ref.add(dict(post))
         raise Exception()
@@ -53,7 +53,7 @@ def edit_post(post_id, post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
         doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"] == True:
+        if doc["admin"]:
             edit = db.collection(u"posts").document(post_id)
             new_data = post.dict(exclude_none=True, exclude_defaults=True)
 
@@ -75,7 +75,7 @@ def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
         doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"] == True:
+        if doc["admin"]:
             db.collection(u"posts").document(post_id).delete()
         else:
             raise Exception()
