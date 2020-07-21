@@ -5,6 +5,11 @@ from pydantic import AnyUrl, EmailStr
 from pytz import timezone
 
 
+class Comment(BaseModel):
+    user_id: str
+    content: str
+
+
 class Post(BaseModel):
     title: Optional[str]
     type: Optional[Literal["article", "quiz", "video"]]
@@ -15,6 +20,7 @@ class Post(BaseModel):
     resource_url: Optional[AnyUrl]
     content: Optional[str]
     questions: Optional[List[str]] = []
+    comments: Optional[Comment]
 
 
 class Badge(BaseModel):
@@ -35,6 +41,7 @@ class Course(BaseModel):
 class User(BaseModel):
     name: Optional[str]
     avatar: Optional[str]
+    admin: Optional[bool]
     email: Optional[EmailStr]
     phone: Optional[int]
     points: Optional[int] = 0
