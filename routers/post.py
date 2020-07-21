@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from models import Post, Comment
+from models import Post, Comment, Question
 from typing import Dict
 from routers import db
 from datetime import datetime

@@ -19,15 +19,6 @@ def get_all_courses():
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{course_id}", response_model=Course)
-def get_course(course_id):
-    try:
-        course = db.collection(u"courses").document(course_id).get().to_dict()
-        return course
-
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/{course_id}", response_model=Course)
 def get_course(course_id):
