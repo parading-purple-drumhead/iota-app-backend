@@ -57,3 +57,15 @@ class Question(BaseModel):
     option: Optional[Dict[str, str]]
     answer: Optional[List[str]]
     difficulty: Optional[str]
+    number: Optional[int]
+
+
+class Quiz(BaseModel):
+    question_id: Optional[str]
+    answer: Optional[str]
+
+
+class QuestionA(BaseModel):
+    question: Optional[str]
+    option: Optional[Dict[str, str]]
+    difficulty: Optional[str]
