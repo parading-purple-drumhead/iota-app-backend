@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Request
-from models import Post, Comment, Question
+from models import Post, Comment, Question, Quiz, QuestionA
 from typing import Dict
 from routers import db
 from datetime import datetime
 from pytz import timezone
+import random
 
 router = APIRouter()
 
@@ -191,6 +192,53 @@ def edit_question(post_id, question_id, question: Question):
             doc_ref.update(new_data)
         else:
             raise Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{post_id}/submit")
+def submint_quiz(post_id, quiz: Quiz):
+    try:
+        post = db.collection(u"posts").document(post_id).get().to_dict()
+        if post["type"] == "quiz":
+            doc = db.collection(u"questionbank").document(post_id)
+            doc_ref = doc.collection("questions").document(quiz.question_id).get().to_dict()
+            print(doc_ref["answer"][0])
+            print(quiz.answer)
+            if doc_ref["answer"][0] == quiz.answer:
+                return {
+                    "mark": "1"
+                }
+            else:
+                return {
+                    "mark": "0"
+                }
+        else:
+            return Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{post_id}/random", response_model=Dict[str, QuestionA])
+def get_random_question(post_id):
+    try:
+        post = db.collection(u"posts").document(post_id).get().to_dict()
+        if post['type'] == "quiz":
+            doc = db.collection(u"questionbank").document(post_id)
+            question_ref = doc.collection("questions").order_by("number").limit(3).stream()
+            data = {}
+            for question in question_ref:
+                data[question.id] = question.to_dict()
+                d = db.collection(u"questionbank").document(post_id)
+                edit = d.collection(u"questions").document(question.id)
+                edit.update({u"number": random.randint(1, 100)})
+            return data
+        else:
+            return Exception()
 
     except Exception as e:
         print(e)

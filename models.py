@@ -1,46 +1,4 @@
 from pydantic import BaseModel
-<<<<<<< HEAD
-import datetime
-
-
-class post(BaseModel):
-    title: str
-    post_type: str
-    created_at: datetime.datetime = None
-    updated_at: datetime.datetime = None
-    description: str = None
-    url: str = None
-    resource_url: str = None
-    content: str = None
-    questions: list = None
-    token_sent: str
-    uid_sent: str
-    post_id: str = None
-
-
-class course(BaseModel):
-    description: str = None
-    enrollments: int = None
-    name: str = None
-    rating: float = None
-    posts: list = None
-    recommended_courses: list = None
-    token_sent: str
-    uid_sent: str
-    course_id: str = None
-
-
-class user(BaseModel):
-    name: str
-    avatar: str
-    email: str
-    phone: int
-    points: int
-    token_sent: str
-    uid_sent: str
-    user_id: str
-    specific: str
-=======
 from datetime import datetime
 from typing import Optional, List, Dict, Literal
 from pydantic import AnyUrl, EmailStr
@@ -99,4 +57,15 @@ class Question(BaseModel):
     option: Optional[Dict[str, str]]
     answer: Optional[List[str]]
     difficulty: Optional[str]
->>>>>>> 223ff556468e709c357ecdcef2955149aaf5ddba
+    number: Optional[int]
+
+
+class Quiz(BaseModel):
+    question_id: Optional[str]
+    answer: Optional[str]
+
+
+class QuestionA(BaseModel):
+    question: Optional[str]
+    option: Optional[Dict[str, str]]
+    difficulty: Optional[str]
