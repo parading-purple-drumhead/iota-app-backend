@@ -12,4 +12,4 @@ deploy:
     - master@iot-alliance/iota-app/iota-app-backend
   script:
     - gem install dpl
-    - dpl --provider=heroku --app=gitlab-ci-python-test-staging --api-key=$HEROKU_STAGING_API_KEY
+    - dpl --provider=heroku --app=iota-app-backend --api-key=$HEROKU_STAGING_API_KEY
