@@ -7,12 +7,9 @@ test:
 
 deploy:
   stage: deploy
-  image: google/cloud-sdk:slim
   environment: Production
   only:
     - master@iot-alliance/iota-app/iota-app-backend
   script:
-    - echo $SERVICE_ACCOUNT > /tmp/$CI_PIPELINE_ID.json
-    - gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
-    - gcloud --quiet --project $PROJECT_ID app deploy app.yaml
-    - rm /tmp/$CI_PIPELINE_ID.json
+    - gem install dpl
+    - dpl --provider=heroku --app=iota-app-backend --api-key=$HEROKU_STAGING_API_KEY
