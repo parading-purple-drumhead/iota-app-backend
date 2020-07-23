@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from models import Post, Comment, Question, Quiz, QuestionA
-from typing import Dict
+from typing import Dict, List
 from routers import db
 from datetime import datetime
 from pytz import timezone
@@ -199,22 +199,20 @@ def edit_question(post_id, question_id, question: Question):
 
 
 @router.post("/{post_id}/submit")
-def submint_quiz(post_id, quiz: Quiz):
+def submint_quiz(post_id, quiz: List[Quiz]):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
-            doc_ref = doc.collection("questions").document(quiz.question_id).get().to_dict()
-            print(doc_ref["answer"][0])
-            print(quiz.answer)
-            if doc_ref["answer"][0] == quiz.answer:
-                return {
-                    "mark": "1"
-                }
-            else:
-                return {
-                    "mark": "0"
-                }
+            mark = 0
+            for i in range(len(quiz)):
+                doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
+                if doc_ref["answer"][0] == quiz[i].answer:
+                    mark += 1
+
+            return {
+                    "mark": mark
+                    }
         else:
             return Exception()
 
