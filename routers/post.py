@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from models import Post, Comment, Question, Quiz, QuestionA
-from typing import Dict , List
+from typing import Dict, List
 from routers import db
 from datetime import datetime
 from pytz import timezone
@@ -211,8 +211,8 @@ def submint_quiz(post_id, quiz: List[Quiz]):
                     mark += 1
 
             return {
-            "mark":mark
-            }
+                    "mark": mark
+                    }
         else:
             return Exception()
 
