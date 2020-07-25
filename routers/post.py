@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from models import Post, Comment, Question, Quiz, QuestionA
+from models import Post, Comment, Question, Quiz
 from typing import Dict, List
 from routers import db
 from datetime import datetime
@@ -221,19 +221,21 @@ def submint_quiz(post_id, quiz: List[Quiz]):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{post_id}/random", response_model=Dict[str, QuestionA])
+@router.get("/{post_id}/random")
 def get_random_question(post_id):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
-            question_ref = doc.collection("questions").order_by("number").limit(3).stream()
-            data = {}
+            question_ref = doc.collection("questions").order_by("number").limit(6).stream()
+            data = [None] * 6
+            i = 0
             for question in question_ref:
-                data[question.id] = question.to_dict()
-                d = db.collection(u"questionbank").document(post_id)
-                edit = d.collection(u"questions").document(question.id)
-                edit.update({u"number": random.randint(1, 100)})
+                edit = db.collection(u"questionbank").document(post_id)
+                editing = edit.collection(u"questions").document(question.id)
+                editing.update({u"number": random.randint(1, 100)})
+                data[i] = question.to_dict()
+                i = i + 1
             return data
         else:
             return Exception()
