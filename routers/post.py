@@ -140,7 +140,7 @@ def add_question(post_id, question: Question):
             doc.add(dict(question))
 
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -159,7 +159,7 @@ def get_all_question(post_id):
                 data[question.id] = question.to_dict()
             return data
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -199,22 +199,20 @@ def edit_question(post_id, question_id, question: Question):
 
 
 @router.post("/{post_id}/submit")
-def submint_quiz(post_id, quiz: List[Quiz]):
+def submit_quiz(post_id, quiz: List[Quiz]):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
-                doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
-                if doc_ref["answer"][0] == quiz[i].answer:
-                    mark += 1
+                if quiz[i].answer[0] == quiz[i].response:
+                    mark = mark + 1
 
             return {
-                    "mark": mark
-                    }
+                "mark": mark
+                }
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -231,14 +229,13 @@ def get_random_question(post_id):
             data = [None] * 6
             i = 0
             for question in question_ref:
-                edit = db.collection(u"questionbank").document(post_id)
-                editing = edit.collection(u"questions").document(question.id)
+                editing = doc.collection(u"questions").document(question.id)
                 editing.update({u"number": random.randint(1, 100)})
                 data[i] = question.to_dict()
                 i = i + 1
             return data
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
