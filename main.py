@@ -47,8 +47,8 @@ async def verify_token(request: Request, call_next):
             if auth.verify_id_token(token)["uid"] != uid:
                 raise Exception()
 
-        response = await call_next(request)
-        return response
+#         response = await call_next(request)
+#         return response
 
     except ValidationError as e:
         print(e)

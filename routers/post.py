@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
-from models import Post, Comment, Question, Quiz
 from typing import Dict, List
+from models import Post, Comment, Question, Quiz, QuestionA
 from routers import db
 from datetime import datetime
 from pytz import timezone
@@ -102,7 +102,7 @@ def add_comment(post_id, comment: Comment):
 def edit_comment(post_id, comment_id, comment: Comment, request: Request):
     try:
         doc_ref = db.collection(u"posts").document(post_id)
-        doc = doc_ref.collection(u"comment").document(comment_id)
+        doc = doc_ref.collection(u"comments").document(comment_id)
         doc_get = doc.get().to_dict()
         uid = request.headers.get("uid")
         if doc_get["user_id"] == uid:
@@ -119,7 +119,7 @@ def edit_comment(post_id, comment_id, comment: Comment, request: Request):
 def delete_comment(post_id, comment_id, request: Request):
     try:
         doc_ref = db.collection(u"posts").document(post_id)
-        doc = doc_ref.collection(u"comment").document(comment_id)
+        doc = doc_ref.collection(u"comments").document(comment_id)
         doc_get = doc.get().to_dict()
         uid = request.headers.get("uid")
         if doc_get["user_id"] == uid:
@@ -140,7 +140,7 @@ def add_question(post_id, question: Question):
             doc.add(dict(question))
 
         else:
-            raise Exception()
+            return Exception()
 
     except Exception as e:
         print(e)
@@ -159,7 +159,7 @@ def get_all_question(post_id):
                 data[question.id] = question.to_dict()
             return data
         else:
-            raise Exception()
+            return Exception()
 
     except Exception as e:
         print(e)
