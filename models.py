@@ -34,8 +34,13 @@ class Course(BaseModel):
     enrollments: Optional[List[str]] = []
     name: Optional[str]
     rating: Optional[float] = 0.0
-    posts: Optional[List[str]] = []
+    chapters: Optional[List[str]] = []
     recommended_courses: Optional[List[str]] = []
+
+
+class Chapter(BaseModel):
+    title: Optional[str]
+    posts: Optional[List[str]] = []
 
 
 class User(BaseModel):
