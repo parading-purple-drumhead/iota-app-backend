@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from typing import Dict, List
 from models import Post, Comment, Question, Quiz, QuestionA
+from firebase_admin import firestore
 from routers import db
 from datetime import datetime
 from pytz import timezone
@@ -38,10 +39,17 @@ def get_post(post_id):
 def add_post(post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
+        chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             doc_ref = db.collection(u"posts")
-            doc_ref.add(dict(post))
+            docref = doc_ref.add(dict(post))
+            print(docref[1].id)
+            chapter_ref = db.collection("chapters").document(chapter_id)
+            chapter_ref.update({
+                u"posts": firestore.ArrayUnion([docref[1].id])
+            })
+
         raise Exception()
 
     except Exception as e:
@@ -75,9 +83,13 @@ def edit_post(post_id, post: Post, request: Request):
 def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
+        chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             db.collection(u"posts").document(post_id).delete()
+            db.collection(u"chapters").document(chapter_id).update({
+                u"posts": firestore.ArrayRemove([post_id])
+            })
         else:
             raise Exception()
 
