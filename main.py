@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from fastapi.exceptions import RequestValidationError, ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from routers import post, course, chapter, user, badge
+from routers import post, course, chapter, user, badge, bookmark
 from firebase_admin import auth
 
 tags_metadata = [
@@ -97,4 +97,10 @@ app.include_router(
     badge.router,
     prefix="/badge",
     tags=["Badge"]
+)
+
+app.include_router(
+    bookmark.router,
+    prefix="/bookmark",
+    tags=["Bookmark"]
 )
