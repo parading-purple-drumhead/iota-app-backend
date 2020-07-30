@@ -211,8 +211,9 @@ def edit_question(post_id, question_id, question: Question):
 
 
 @router.post("/{post_id}/submit")
-def submit_quiz(post_id, quiz: List[Quiz]):
+def submit_quiz(request: Request, post_id, quiz: List[Quiz]):
     try:
+        uid = request.headers.get("uid")
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             mark = 0
@@ -220,9 +221,15 @@ def submit_quiz(post_id, quiz: List[Quiz]):
                 if quiz[i].answer[0] == quiz[i].response:
                     mark = mark + 1
 
+            user = db.collection("users").document(uid)
+            edit = user.get().to_dict()
+            marks = edit["points"] + mark
+            user.update({u"points": marks})
+
             return {
                 "mark": mark
                 }
+
         else:
             raise Exception()
 
@@ -237,14 +244,33 @@ def get_random_question(post_id):
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
-            question_ref = doc.collection("questions").order_by("number").limit(6).stream()
-            data = [None] * 6
+            random_ref = doc.collection(u"questions")
             i = 0
-            for question in question_ref:
-                editing = doc.collection(u"questions").document(question.id)
-                editing.update({u"number": random.randint(1, 100)})
-                data[i] = question.to_dict()
+            data = [None] * 6
+            easy = random_ref.where(u"difficulty", u"==", u"easy")
+            easy_ref = easy.order_by("number").limit(2).stream()
+            for info in easy_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
+
+            medium = random_ref.where(u"difficulty", u"==", u"medium")
+            medium_ref = medium.order_by("number").limit(2).stream()
+            for info in medium_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
+            hard = random_ref.where(u"difficulty", u"==", u"hard")
+            hard_ref = hard.order_by("number").limit(2).stream()
+            for info in hard_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
             return data
         else:
             raise Exception()
