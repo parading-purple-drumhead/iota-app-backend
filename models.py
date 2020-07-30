@@ -74,3 +74,8 @@ class QuestionA(BaseModel):
     question: Optional[str]
     option: Optional[Dict[str, str]]
     difficulty: Optional[str]
+
+
+class Bookmark(BaseModel):
+    type: Optional[Literal["post", "course"]]
+    id: Optional[str]
