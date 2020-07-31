@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
-from models import Post, Comment, Question, Quiz, QuestionA
-from typing import Dict
+from typing import Dict, List
+from models import Post, Comment, Question, Quiz
+from firebase_admin import firestore
 from routers import db
 from datetime import datetime
 from pytz import timezone
@@ -38,10 +39,17 @@ def get_post(post_id):
 def add_post(post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
+        chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             doc_ref = db.collection(u"posts")
-            doc_ref.add(dict(post))
+            docref = doc_ref.add(dict(post))
+            print(docref[1].id)
+            chapter_ref = db.collection("chapters").document(chapter_id)
+            chapter_ref.update({
+                u"posts": firestore.ArrayUnion([docref[1].id])
+            })
+
         raise Exception()
 
     except Exception as e:
@@ -75,9 +83,13 @@ def edit_post(post_id, post: Post, request: Request):
 def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
+        chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             db.collection(u"posts").document(post_id).delete()
+            db.collection(u"chapters").document(chapter_id).update({
+                u"posts": firestore.ArrayRemove([post_id])
+            })
         else:
             raise Exception()
 
@@ -132,15 +144,21 @@ def delete_comment(post_id, comment_id, request: Request):
 
 
 @router.post("/{post_id}/question")
-def add_question(post_id, question: Question):
+def add_question(post_id, question: Question, request: Request):
     try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id).collection(u"questions")
-            doc.add(dict(question))
+        uid = request.headers.get("uid")
+        doc = db.collection(u"users").document(uid).get().to_dict()
+        if doc["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                doc_ref = db.collection(u"questionbank").document(post_id)
+                doc1 = doc_ref.collection(u"questions")
+                doc1.add(dict(question))
+            else:
+                raise Exception()
 
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -167,12 +185,17 @@ def get_all_question(post_id):
 
 
 @router.delete("/{post_id}/question/{question_id}")
-def delete_question(question_id, post_id):
+def delete_question(question_id, post_id, request: Request):
     try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            doc.collection("questions").document(question_id).delete()
+        uid = request.headers.get("uid")
+        doc1 = db.collection(u"users").document(uid).get().to_dict()
+        if doc1["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                doc = db.collection(u"questionbank").document(post_id)
+                doc.collection("questions").document(question_id).delete()
+            else:
+                raise Exception()
         else:
             raise Exception()
 
@@ -182,14 +205,19 @@ def delete_question(question_id, post_id):
 
 
 @router.put("/{post_id}/question/{question_id}")
-def edit_question(post_id, question_id, question: Question):
+def edit_question(post_id, question_id, question: Question, request: Request):
     try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            doc_ref = doc.collection("questions").document(question_id)
-            new_data = question.dict(exclude_none=True, exclude_defaults=True)
-            doc_ref.update(new_data)
+        uid = request.headers.get("uid")
+        doc1 = db.collection(u"users").document(uid).get().to_dict()
+        if doc1["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                doc = db.collection(u"questionbank").document(post_id)
+                doc_ref = doc.collection("questions").document(question_id)
+                new_data = question.dict(exclude_none=True, exclude_defaults=True)
+                doc_ref.update(new_data)
+            else:
+                raise Exception()
         else:
             raise Exception()
 
@@ -199,46 +227,69 @@ def edit_question(post_id, question_id, question: Question):
 
 
 @router.post("/{post_id}/submit")
-def submint_quiz(post_id, quiz: Quiz):
+def submit_quiz(request: Request, post_id, quiz: List[Quiz]):
     try:
+        uid = request.headers.get("uid")
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            doc_ref = doc.collection("questions").document(quiz.question_id).get().to_dict()
-            print(doc_ref["answer"][0])
-            print(quiz.answer)
-            if doc_ref["answer"][0] == quiz.answer:
-                return {
-                    "mark": "1"
+            mark = 0
+            for i in range(len(quiz)):
+                if quiz[i].answer[0] == quiz[i].response:
+                    mark = mark + 1
+
+            user = db.collection("users").document(uid)
+            edit = user.get().to_dict()
+            marks = edit["points"] + mark
+            user.update({u"points": marks})
+
+            return {
+                "mark": mark
                 }
-            else:
-                return {
-                    "mark": "0"
-                }
+
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{post_id}/random", response_model=Dict[str, QuestionA])
+@router.get("/{post_id}/random")
 def get_random_question(post_id):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
-            question_ref = doc.collection("questions").order_by("number").limit(3).stream()
-            data = {}
-            for question in question_ref:
-                data[question.id] = question.to_dict()
-                d = db.collection(u"questionbank").document(post_id)
-                edit = d.collection(u"questions").document(question.id)
+            random_ref = doc.collection(u"questions")
+            i = 0
+            data = [None] * 6
+            easy = random_ref.where(u"difficulty", u"==", u"easy")
+            easy_ref = easy.order_by("number").limit(2).stream()
+            for info in easy_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
+            medium = random_ref.where(u"difficulty", u"==", u"medium")
+            medium_ref = medium.order_by("number").limit(2).stream()
+            for info in medium_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
+            hard = random_ref.where(u"difficulty", u"==", u"hard")
+            hard_ref = hard.order_by("number").limit(2).stream()
+            for info in hard_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
             return data
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)

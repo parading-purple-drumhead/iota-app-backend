@@ -34,8 +34,13 @@ class Course(BaseModel):
     enrollments: Optional[List[str]] = []
     name: Optional[str]
     rating: Optional[float] = 0.0
-    posts: Optional[List[str]] = []
+    chapters: Optional[List[str]] = []
     recommended_courses: Optional[List[str]] = []
+
+
+class Chapter(BaseModel):
+    title: Optional[str]
+    posts: Optional[List[str]] = []
 
 
 class User(BaseModel):
@@ -61,11 +66,18 @@ class Question(BaseModel):
 
 
 class Quiz(BaseModel):
-    question_id: Optional[str]
-    answer: Optional[str]
-
-
-class QuestionA(BaseModel):
     question: Optional[str]
     option: Optional[Dict[str, str]]
+    answer: Optional[List[str]]
     difficulty: Optional[str]
+    number: Optional[int]
+    response: Optional[str]
+
+
+class Bookmark(BaseModel):
+    type: Optional[Literal["post", "course"]]
+    id: Optional[str]
+
+
+class Progress(BaseModel):
+    progress: Optional[str]
