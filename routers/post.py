@@ -24,11 +24,47 @@ def get_all_posts():
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{post_id}", response_model=Post)
+@router.get("/{post_id}")
 def get_post(post_id):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
-        return post
+        if post["type"] == "quiz":
+            doc = db.collection(u"questionbank").document(post_id)
+            random_ref = doc.collection(u"questions")
+            i = 0
+            data = [None] * 6
+            easy = random_ref.where(u"difficulty", u"==", u"easy")
+            easy_ref = easy.order_by("number").limit(2).stream()
+            for info in easy_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
+            medium = random_ref.where(u"difficulty", u"==", u"medium")
+            medium_ref = medium.order_by("number").limit(2).stream()
+            for info in medium_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
+            hard = random_ref.where(u"difficulty", u"==", u"hard")
+            hard_ref = hard.order_by("number").limit(2).stream()
+            for info in hard_ref:
+                data[i] = info.to_dict()
+                edit = doc.collection(u"questions").document(info.id)
+                edit.update({u"number": random.randint(1, 100)})
+                i = i + 1
+
+            return data
+
+        elif post["type"] != "quiz":
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            return post
+
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -246,48 +282,6 @@ def submit_quiz(request: Request, post_id, quiz: List[Quiz]):
                 "mark": mark
                 }
 
-        else:
-            raise Exception()
-
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.get("/{post_id}/random")
-def get_random_question(post_id):
-    try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            random_ref = doc.collection(u"questions")
-            i = 0
-            data = [None] * 6
-            easy = random_ref.where(u"difficulty", u"==", u"easy")
-            easy_ref = easy.order_by("number").limit(2).stream()
-            for info in easy_ref:
-                data[i] = info.to_dict()
-                edit = doc.collection(u"questions").document(info.id)
-                edit.update({u"number": random.randint(1, 100)})
-                i = i + 1
-
-            medium = random_ref.where(u"difficulty", u"==", u"medium")
-            medium_ref = medium.order_by("number").limit(2).stream()
-            for info in medium_ref:
-                data[i] = info.to_dict()
-                edit = doc.collection(u"questions").document(info.id)
-                edit.update({u"number": random.randint(1, 100)})
-                i = i + 1
-
-            hard = random_ref.where(u"difficulty", u"==", u"hard")
-            hard_ref = hard.order_by("number").limit(2).stream()
-            for info in hard_ref:
-                data[i] = info.to_dict()
-                edit = doc.collection(u"questions").document(info.id)
-                edit.update({u"number": random.randint(1, 100)})
-                i = i + 1
-
-            return data
         else:
             raise Exception()
 
