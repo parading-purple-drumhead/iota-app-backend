@@ -214,8 +214,8 @@ def edit_question(post_id, question_id, question: Question, request: Request):
             if post["type"] == "quiz":
                 doc = db.collection(u"questionbank").document(post_id)
                 doc_ref = doc.collection("questions").document(question_id)
-                new_data = question.dict(exclude_none=True, exclude_defaults=True)
-                doc_ref.update(new_data)
+                new = question.dict(exclude_none=True, exclude_defaults=True)
+                doc_ref.update(new)
             else:
                 raise Exception()
         else:
