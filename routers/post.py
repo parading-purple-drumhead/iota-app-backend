@@ -144,15 +144,21 @@ def delete_comment(post_id, comment_id, request: Request):
 
 
 @router.post("/{post_id}/question")
-def add_question(post_id, question: Question):
+def add_question(post_id, question: Question, request: Request):
     try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id).collection(u"questions")
-            doc.add(dict(question))
+        uid = request.headers.get("uid")
+        doc = db.collection(u"users").document(uid).get().to_dict()
+        if doc["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                doc_ref = db.collection(u"questionbank").document(post_id)
+                doc1 = doc_ref.collection(u"questions")
+                doc1.add(dict(question))
+            else:
+                raise Exception()
 
         else:
-            return Exception()
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -179,12 +185,17 @@ def get_all_question(post_id):
 
 
 @router.delete("/{post_id}/question/{question_id}")
-def delete_question(question_id, post_id):
+def delete_question(question_id, post_id, request: Request):
     try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            doc.collection("questions").document(question_id).delete()
+        uid = request.headers.get("uid")
+        doc1 = db.collection(u"users").document(uid).get().to_dict()
+        if doc1["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                doc = db.collection(u"questionbank").document(post_id)
+                doc.collection("questions").document(question_id).delete()
+            else:
+                raise Exception()
         else:
             raise Exception()
 
@@ -194,14 +205,19 @@ def delete_question(question_id, post_id):
 
 
 @router.put("/{post_id}/question/{question_id}")
-def edit_question(post_id, question_id, question: Question):
+def edit_question(post_id, question_id, question: Question, request: Request):
     try:
-        post = db.collection(u"posts").document(post_id).get().to_dict()
-        if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            doc_ref = doc.collection("questions").document(question_id)
-            new_data = question.dict(exclude_none=True, exclude_defaults=True)
-            doc_ref.update(new_data)
+        uid = request.headers.get("uid")
+        doc1 = db.collection(u"users").document(uid).get().to_dict()
+        if doc1["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                doc = db.collection(u"questionbank").document(post_id)
+                doc_ref = doc.collection("questions").document(question_id)
+                new = question.dict(exclude_none=True, exclude_defaults=True)
+                doc_ref.update(new)
+            else:
+                raise Exception()
         else:
             raise Exception()
 
