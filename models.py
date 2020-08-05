@@ -55,7 +55,7 @@ class User(BaseModel):
     badge: Optional[List[str]] = []
     bookmarks: Optional[List[str]] = []
     activity: Optional[Dict[str, int]] = None
-    recomendedCourse: Optional[List[str]] = None
+    recomended_course: Optional[List[str]] = None
 
 
 class Question(BaseModel):
