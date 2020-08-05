@@ -82,3 +82,4 @@ class Bookmark(BaseModel):
 
 class Progress(BaseModel):
     progress: Optional[str]
+    post_id: Optional[str]

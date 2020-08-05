@@ -26,6 +26,7 @@ def recomended_course(user_id):
             i = i + 1
 
         recommended_courses = list(recomended_course)
+        print(recommended_courses)
         k = 0
         for k in range(len(recommended_courses)):
             edit = db.collection(u"users").document(user_id)
@@ -85,30 +86,40 @@ def delete_user(user_id):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/{course_id}/{post_id}/progress")
-def progress(request: Request, course_id, post_id, progress: Progress):
+@router.post("/{course_id}/progress")
+def progress(request: Request, course_id, progress: Progress):
     try:
-        user_id = request.headers.get("uid")
-        edi = db.collection(u"users").document(user_id).collection(u"progress").document(course_id)
-        edit = edi.collection("post_progress").document(post_id)
-        post_progress = edi.collection("post_progress").stream()
-        post_count = 0
+        uid = request.headers.get("uid")
+        update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
+        update.set({u"post_progress": {progress.post_id: progress.progress}}, merge=True)
+        edit = update.get().to_dict()
+        post_count = len(edit["post_progress"])
         post_completed = 0
-
-        edit.update({u"progress": progress.progress})
-
-        for post in post_progress:
-            post_count = post_count + 1
-            sums = edi.collection("post_progress").document(post.id).get().to_dict()
-            if sums["progress"] == "1":
+        for i in range(post_count):
+            if list(edit["post_progress"].values())[i] == "1":
                 post_completed = post_completed + 1
 
-        course_progress = post_completed/post_count
-        edi.update({u"course_progress": course_progress})
+            i = i + 1
+
+        count = db.collection(u"courses").document(course_id).collection("chapters").stream()
+
+        chapters = []
+        post_c = 0
+        for chap in count:
+            chapters.append(chap.id)
+
+        c = db.collection(u"courses").document(course_id).collection("chapters")
+        for i in range(len(chapters)):
+            counts = c.document(chapters[i]).get().to_dict()
+            k = len(counts["post_ids"])
+            post_c = post_c + k
+
+        course_progress = post_completed/post_c
 
         return{
-            "courseProgress": course_progress,
-            "postProgress": progress.progress
+            course_id: {
+                "courseProgress": course_progress
+            }
         }
 
     except Exception as e:
