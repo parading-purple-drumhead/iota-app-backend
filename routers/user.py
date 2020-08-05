@@ -2,14 +2,48 @@ from fastapi import APIRouter, HTTPException, Request
 from models import User, Progress
 from routers import db
 from google.api_core.exceptions import AlreadyExists
+from firebase_admin import firestore
 
 router = APIRouter()
+
+
+def recomended_course(user_id):
+    try:
+        courses = db.collection(u"users").document(user_id).collection(u"progress").stream()
+        course = []
+        for reco in courses:
+            course.append(reco.id)
+
+        i = 0
+        j = 0
+        recomended_course = set()
+        for i in range(len(course)):
+            q = db.collection("courses").document(course[i]).get().to_dict()
+            for j in range(len(q["recommended_courses"])):
+                recomended_course.add(q["recommended_courses"][j])
+                j = j + 1
+
+            i = i + 1
+
+        recommended_courses = list(recomended_course)
+        k = 0
+        for k in range(len(recommended_courses)):
+            edit = db.collection(u"users").document(user_id)
+            edit.update({
+                u"recomended_course": firestore.ArrayUnion([recommended_courses[k]])
+                })
+            k = k + 1
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{user_id}", response_model=User)
 def get_user_info(user_id):
 
     try:
+        recomended_course(user_id)
         user = db.collection(u"users").document(user_id).get().to_dict()
         return user
 
