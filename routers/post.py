@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("", response_model=Dict[str, Post])
 def get_all_posts():
     try:
-        posts_ref = db.collection(u"posts").stream()
+        posts_ref = db.collection(u"posts").get()
         data = {}
         for post in posts_ref:
             data[post.id] = post.to_dict()
@@ -60,7 +60,14 @@ def get_post(post_id):
             return data
 
         elif post["type"] != "quiz":
-            post = db.collection(u"posts").document(post_id).get().to_dict()
+            post_ref = db.collection(u"posts").document(post_id)
+            post = post_ref.get().to_dict()
+            comments_ref = post_ref.collection(u"comments").get()
+            post["comments"] = []
+            for comment in comments_ref:
+                comment_dict = comment.to_dict()
+                comment_dict["id"] = comment.id
+                post["comments"].append(comment_dict)
             return post
 
         else:
@@ -75,15 +82,16 @@ def get_post(post_id):
 def add_post(post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
+        course_id = request.headers.get("course_id")
         chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             doc_ref = db.collection(u"posts")
             docref = doc_ref.add(dict(post))
-            print(docref[1].id)
-            chapter_ref = db.collection("chapters").document(chapter_id)
+            course_ref = db.collection(u"courses").document(course_id)
+            chapter_ref = course_ref.collection("chapters").document(chapter_id)
             chapter_ref.update({
-                u"posts": firestore.ArrayUnion([docref[1].id])
+                u"post_ids": firestore.ArrayUnion([docref[1].id])
             })
 
         raise Exception()
@@ -119,12 +127,14 @@ def edit_post(post_id, post: Post, request: Request):
 def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
+        course_id = request.headers.get("course_id")
         chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             db.collection(u"posts").document(post_id).delete()
-            db.collection(u"chapters").document(chapter_id).update({
-                u"posts": firestore.ArrayRemove([post_id])
+            course_ref = db.collection(u"courses").document(course_id)
+            course_ref.collection(u"chapters").document(chapter_id).update({
+                u"post_ids": firestore.ArrayRemove([post_id])
             })
         else:
             raise Exception()
@@ -139,7 +149,6 @@ def add_comment(post_id, comment: Comment):
     try:
         doc_ref = db.collection(u"posts")
         doc = doc_ref.document(post_id).collection(u"comments")
-
         doc.add(dict(comment))
     except Exception as e:
         print(e)
