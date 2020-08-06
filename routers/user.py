@@ -10,7 +10,14 @@ router = APIRouter()
 def get_user_info(user_id):
 
     try:
-        user = db.collection(u"users").document(user_id).get().to_dict()
+        user_ref = db.collection(u"users").document(user_id)
+        user = user_ref.get().to_dict()
+        progress = user_ref.collection("progress").get()
+        user["progress"] = []
+        for doc in progress:
+            doc_dict = doc.to_dict()
+            doc_dict["id"] = doc.id
+            user["progress"].append(doc_dict)
         return user
 
     except Exception as e:

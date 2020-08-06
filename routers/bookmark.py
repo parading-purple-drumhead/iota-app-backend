@@ -7,14 +7,13 @@ from firebase_admin import firestore
 router = APIRouter()
 
 
-@router.post("/add")
+@router.post("")
 def add_bookmark(bookmark: Bookmark, request: Request):
     try:
         uid = request.headers.get("uid")
-        bookmark_ref = db.collection(u"bookmarks").add(dict(bookmark))
         user = db.collection(u"users").document(uid)
         user.update({
-            u"bookmarks": firestore.ArrayUnion([bookmark_ref[1].id])
+            "bookmarks."+bookmark.type: firestore.ArrayUnion([bookmark.id])
         })
 
     except Exception as e:
@@ -22,14 +21,13 @@ def add_bookmark(bookmark: Bookmark, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{id}")
-def remove_bookmark(id, request: Request):
+@router.delete("")
+def remove_bookmark(bookmark: Bookmark, request: Request):
     try:
         uid = request.headers.get("uid")
-        db.collection(u"bookmarks").document(id).delete()
         user = db.collection(u"users").document(uid)
         user.update({
-            u"bookmarks": firestore.ArrayRemove([id])
+            "bookmarks."+bookmark.type: firestore.ArrayRemove([bookmark.id])
         })
 
     except Exception as e:
