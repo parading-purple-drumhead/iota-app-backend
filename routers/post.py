@@ -70,8 +70,7 @@ def get_post(post_id, request: Request):
                 post["comments"].append(comment_dict)
             return post
 
-        else:
-            raise Exception()
+        raise Exception()
 
     except Exception as e:
         print(e)
