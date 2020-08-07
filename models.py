@@ -14,8 +14,8 @@ class Post(BaseModel):
     id: Optional[str]
     title: Optional[str]
     type: Optional[Literal["article", "quiz", "video"]]
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
     description: Optional[str]
     url: Optional[str]
     resource_url: Optional[AnyUrl]
@@ -90,8 +90,3 @@ class Quiz(BaseModel):
 class Bookmark(BaseModel):
     type: Optional[Literal["posts", "courses"]]
     id: Optional[str]
-
-
-class Progress(BaseModel):
-    progress: Optional[str]
-    post_id: Optional[str]
