@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("", response_model=Dict[str, Post])
 def get_all_posts():
     try:
-        posts_ref = db.collection(u"posts").get()
+        posts_ref = db.collection(u"posts").stream()
         data = {}
         for post in posts_ref:
             data[post.id] = post.to_dict()
@@ -25,7 +25,7 @@ def get_all_posts():
 
 
 @router.get("/{post_id}")
-def get_post(post_id):
+def get_post(post_id, request: Request):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
@@ -59,15 +59,21 @@ def get_post(post_id):
 
             return data
 
-        elif post["type"] != "quiz":
-            post_ref = db.collection(u"posts").document(post_id)
-            post = post_ref.get().to_dict()
-            comments_ref = post_ref.collection(u"comments").get()
-            post["comments"] = []
-            for comment in comments_ref:
-                comment_dict = comment.to_dict()
-                comment_dict["id"] = comment.id
-                post["comments"].append(comment_dict)
+        elif post["type"] == "video":
+            uid = request.headers.get("uid")
+            course_id = request.headers.get("course_id")
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            pro = db.collection(u"users").document(uid)
+            pro_ref = pro.collection("progress").document(course_id).get().to_dict()
+            progress = pro_ref["post_progress"]
+            return [
+                {
+                    "postProgress": progress.get(post_id)
+                    }, post
+                    ]
+
+        elif post["type"] == "article":
+            post = db.collection(u"posts").document(post_id).get().to_dict()
             return post
 
         else:
@@ -82,17 +88,18 @@ def get_post(post_id):
 def add_post(post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
-        course_id = request.headers.get("course_id")
         chapter_id = request.headers.get("chapter_id")
+        course_id = request.headers.get("course_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             doc_ref = db.collection(u"posts")
             docref = doc_ref.add(dict(post))
-            course_ref = db.collection(u"courses").document(course_id)
-            chapter_ref = course_ref.collection("chapters").document(chapter_id)
-            chapter_ref.update({
+            print(docref[1].id)
+            chapter_ref = db.collection("courses").document(course_id)
+            chap = chapter_ref.collection("chapters").document(chapter_id)
+            chap.set({
                 u"post_ids": firestore.ArrayUnion([docref[1].id])
-            })
+            }, merge=True)
 
         raise Exception()
 
@@ -127,14 +134,12 @@ def edit_post(post_id, post: Post, request: Request):
 def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
-        course_id = request.headers.get("course_id")
         chapter_id = request.headers.get("chapter_id")
         doc = db.collection(u"users").document(uid).get().to_dict()
         if doc["admin"]:
             db.collection(u"posts").document(post_id).delete()
-            course_ref = db.collection(u"courses").document(course_id)
-            course_ref.collection(u"chapters").document(chapter_id).update({
-                u"post_ids": firestore.ArrayRemove([post_id])
+            db.collection(u"chapters").document(chapter_id).update({
+                u"posts": firestore.ArrayRemove([post_id])
             })
         else:
             raise Exception()
@@ -149,6 +154,7 @@ def add_comment(post_id, comment: Comment):
     try:
         doc_ref = db.collection(u"posts")
         doc = doc_ref.document(post_id).collection(u"comments")
+
         doc.add(dict(comment))
     except Exception as e:
         print(e)

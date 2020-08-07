@@ -7,6 +7,50 @@ from firebase_admin import firestore
 router = APIRouter()
 
 
+def cprogress(user_id):
+    try:
+        update = db.collection(u"users").document(user_id).collection(u"progress").stream()
+        user = db.collection("users").document(user_id)
+
+        courses = []
+        j = 0
+        for cprogress in update:
+            courses.append(cprogress.id)
+            count = db.collection(u"courses").document(courses[j]).collection("chapters").stream()
+            chapters = []
+            post_c = 0
+            for chap in count:
+                chapters.append(chap.id)
+
+            c = db.collection(u"courses").document(courses[j]).collection("chapters")
+            i = 0
+            for i in range(len(chapters)):
+                counts = c.document(chapters[i]).get().to_dict()
+                k = len(counts["post_ids"])
+                post_c = post_c + k
+                i = i + 1
+
+            up = db.collection(u"users").document(user_id)
+            update = up.collection(u"progress").document(courses[j])
+            edit = update.get().to_dict()
+            post_count = len(edit["post_progress"])
+            post_completed = 0
+            k = 0
+            for k in range(post_count):
+                if list(edit["post_progress"].values())[k] == "1":
+                    post_completed = post_completed + 1
+
+                k = k + 1
+
+            course_progress = post_completed/post_c
+            user.set({u"course_progress": {courses[j]: course_progress}}, merge=True)
+            j = j + 1
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 def recomended_course(user_id):
     try:
         courses = db.collection(u"users").document(user_id).collection(u"progress").stream()
@@ -26,7 +70,6 @@ def recomended_course(user_id):
             i = i + 1
 
         recommended_courses = list(recomended_course)
-        print(recommended_courses)
         k = 0
         for k in range(len(recommended_courses)):
             edit = db.collection(u"users").document(user_id)
@@ -44,14 +87,9 @@ def recomended_course(user_id):
 def get_user_info(user_id):
 
     try:
-        user_ref = db.collection(u"users").document(user_id)
-        user = user_ref.get().to_dict()
-        progress = user_ref.collection("progress").get()
-        user["progress"] = []
-        for doc in progress:
-            doc_dict = doc.to_dict()
-            doc_dict["id"] = doc.id
-            user["progress"].append(doc_dict)
+        recomended_course(user_id)
+        cprogress(user_id)
+        user = db.collection(u"users").document(user_id).get().to_dict()
         return user
 
     except Exception as e:
@@ -98,35 +136,6 @@ def progress(request: Request, course_id, progress: Progress):
         uid = request.headers.get("uid")
         update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
         update.set({u"post_progress": {progress.post_id: progress.progress}}, merge=True)
-        edit = update.get().to_dict()
-        post_count = len(edit["post_progress"])
-        post_completed = 0
-        for i in range(post_count):
-            if list(edit["post_progress"].values())[i] == "1":
-                post_completed = post_completed + 1
-
-            i = i + 1
-
-        count = db.collection(u"courses").document(course_id).collection("chapters").stream()
-
-        chapters = []
-        post_c = 0
-        for chap in count:
-            chapters.append(chap.id)
-
-        c = db.collection(u"courses").document(course_id).collection("chapters")
-        for i in range(len(chapters)):
-            counts = c.document(chapters[i]).get().to_dict()
-            k = len(counts["post_ids"])
-            post_c = post_c + k
-
-        course_progress = post_completed/post_c
-
-        return{
-            course_id: {
-                "courseProgress": course_progress
-            }
-        }
 
     except Exception as e:
         print(e)
