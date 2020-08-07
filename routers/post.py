@@ -59,18 +59,15 @@ def get_post(post_id, request: Request):
 
             return data
 
-        elif post["type"] == "video":
-            uid = request.headers.get("uid")
-            course_id = request.headers.get("course_id")
-            post = db.collection(u"posts").document(post_id).get().to_dict()
-            pro = db.collection(u"users").document(uid)
-            pro_ref = pro.collection("progress").document(course_id).get().to_dict()
-            progress = pro_ref["post_progress"]
-            post.update({"postProgress": progress.get(post_id)})
-            return post
-
-        elif post["type"] == "article":
-            post = db.collection(u"posts").document(post_id).get().to_dict()
+        else:
+            post_ref = db.collection(u"posts").document(post_id)
+            post = post_ref.get().to_dict()
+            comments_ref = post_ref.collection(u"comments").get()
+            post["comments"] = []
+            for comment in comments_ref:
+                comment_dict = comment.to_dict()
+                comment_dict["id"] = comment.id
+                post["comments"].append(comment_dict)
             return post
 
         else:
