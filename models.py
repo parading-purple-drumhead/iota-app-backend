@@ -90,8 +90,3 @@ class Quiz(BaseModel):
 class Bookmark(BaseModel):
     type: Optional[Literal["posts", "courses"]]
     id: Optional[str]
-
-
-class Progress(BaseModel):
-    progress: Optional[str]
-    post_id: Optional[str]
