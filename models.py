@@ -22,6 +22,7 @@ class Post(BaseModel):
     content: Optional[str]
     questions: Optional[List[str]] = []
     comments: Optional[List[Comment]]
+    resource: Optional[Dict[str, AnyUrl]] = None
 
 
 class Badge(BaseModel):
@@ -47,11 +48,8 @@ class Course(BaseModel):
 
 
 class Progress(BaseModel):
-    id: Optional[str]
-    completion: Optional[datetime]
-    course_progress: Optional[float]
-    last_accessed: Optional[datetime]
-    post_progress: Optional[Dict[str, float]]
+    progress: Optional[str]
+    post_id: Optional[str]
 
 
 class User(BaseModel):
@@ -64,10 +62,10 @@ class User(BaseModel):
     college: Optional[str]
     joined: datetime
     badge: Optional[List[str]] = []
-    progress: Optional[List[Progress]]
     bookmarks: Optional[Dict[str, List[str]]]
     activity: Optional[Dict[str, int]] = None
     recomended_course: Optional[List[str]] = None
+    course_progress: Optional[Dict[str, float]] = None
 
 
 class Question(BaseModel):
