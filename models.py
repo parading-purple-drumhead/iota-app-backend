@@ -5,9 +5,18 @@ from pydantic import AnyUrl, EmailStr
 
 
 class Comment(BaseModel):
-    id: str
-    user_id: str
-    content: str
+    id: Optional[str]
+    user_id: Optional[str]
+    content: Optional[str]
+    created_at: Optional[datetime]
+
+
+class Question(BaseModel):
+    question: Optional[str]
+    option: Optional[Dict[str, str]]
+    answer: Optional[List[str]]
+    difficulty: Optional[str]
+    number: Optional[int]
 
 
 class Post(BaseModel):
@@ -20,7 +29,7 @@ class Post(BaseModel):
     url: Optional[str]
     resource_url: Optional[AnyUrl]
     content: Optional[str]
-    questions: Optional[List[str]] = []
+    questions: Optional[Dict[str, Question]] = []
     comments: Optional[List[Comment]]
 
 
@@ -62,7 +71,7 @@ class User(BaseModel):
     phone: Optional[str]
     points: Optional[int] = 0
     college: Optional[str]
-    joined: datetime
+    joined: Optional[datetime]
     badge: Optional[List[str]] = []
     progress: Optional[List[Progress]]
     bookmarks: Optional[Dict[str, List[str]]]
@@ -70,20 +79,8 @@ class User(BaseModel):
     recomended_course: Optional[List[str]] = None
 
 
-class Question(BaseModel):
-    question: Optional[str]
-    option: Optional[Dict[str, str]]
-    answer: Optional[List[str]]
-    difficulty: Optional[str]
-    number: Optional[int]
-
-
 class Quiz(BaseModel):
-    question: Optional[str]
-    option: Optional[Dict[str, str]]
-    answer: Optional[List[str]]
-    difficulty: Optional[str]
-    number: Optional[int]
+    question_id: Optional[str]
     response: Optional[str]
 
 
