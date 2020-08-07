@@ -66,11 +66,8 @@ def get_post(post_id, request: Request):
             pro = db.collection(u"users").document(uid)
             pro_ref = pro.collection("progress").document(course_id).get().to_dict()
             progress = pro_ref["post_progress"]
-            return [
-                {
-                    "postProgress": progress.get(post_id)
-                    }, post
-                    ]
+            post.update({"postProgress": progress.get(post_id)})
+            return post
 
         elif post["type"] == "article":
             post = db.collection(u"posts").document(post_id).get().to_dict()
@@ -94,7 +91,6 @@ def add_post(post: Post, request: Request):
         if doc["admin"]:
             doc_ref = db.collection(u"posts")
             docref = doc_ref.add(dict(post))
-            print(docref[1].id)
             chapter_ref = db.collection("courses").document(course_id)
             chap = chapter_ref.collection("chapters").document(chapter_id)
             chap.set({
