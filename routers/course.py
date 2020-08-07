@@ -45,7 +45,7 @@ def get_course(course_id):
                 post_details = post.to_dict()
                 post_dict = {}
                 post_dict["id"] = post.id
-                post_dict["title"] = post_details["title"]
+                post_dict["title"] = post_details["name"]
                 post_dict["type"] = post_details["type"]
                 chapter_dict["posts"].append(post_dict)
             chapter_dict["id"] = chapter.id
