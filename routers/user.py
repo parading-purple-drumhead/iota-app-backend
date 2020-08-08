@@ -90,6 +90,19 @@ def get_user_info(user_id):
         recomended_course(user_id)
         cprogress(user_id)
         user = db.collection(u"users").document(user_id).get().to_dict()
+
+        if user["course_progress"] is None:
+            user["course_progress"] = {}
+
+        if user["activity"] is None:
+            user["activity"] = {}
+
+        if user["bookmarks"] is None:
+            user["bookmarks"] = []
+
+        if user["recomended_course"] is None:
+            user["recomended_course"] = []
+
         return user
 
     except Exception as e:
@@ -136,6 +149,8 @@ def progress(request: Request, course_id, progress: Progress):
         uid = request.headers.get("uid")
         update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
         update.set({u"post_progress": {progress.post_id: progress.progress}}, merge=True)
+
+        return {progress.post_id: progress.progress}
 
     except Exception as e:
         print(e)
