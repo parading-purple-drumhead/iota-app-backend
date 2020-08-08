@@ -7,6 +7,8 @@ from pydantic import AnyUrl, EmailStr
 class Comment(BaseModel):
     id: Optional[str]
     user_id: Optional[str]
+    user_name: Optional[str]
+    user_avatar: Optional[str]
     content: Optional[str]
     created_at: Optional[datetime]
 
