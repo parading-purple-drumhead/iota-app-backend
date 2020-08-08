@@ -66,6 +66,9 @@ def get_post(post_id, request: Request):
             post["comments"] = []
             for comment in comments_ref:
                 comment_dict = comment.to_dict()
+                user = db.collection(u"users").document(comment_dict["user_id"]).get().to_dict()
+                comment_dict["user_name"] = user["name"]
+                comment_dict["user_avatar"] = user["avatar"]
                 comment_dict["id"] = comment.id
                 post["comments"].append(comment_dict)
             return post
@@ -163,8 +166,8 @@ def edit_comment(post_id, comment_id, comment: Comment, request: Request):
         if doc_get["user_id"] == uid:
             new_data = comment.dict(exclude_none=True, exclude_defaults=True)
             doc.update(new_data)
-        else:
-            raise Exception()
+
+        raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -179,8 +182,8 @@ def delete_comment(post_id, comment_id, request: Request):
         uid = request.headers.get("uid")
         if doc_get["user_id"] == uid:
             doc.delete()
-        else:
-            raise Exception()
+
+        raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -282,8 +285,9 @@ def submint_quiz(post_id, quiz: List[Quiz]):
                     mark += 1
 
             return {
-                    "mark": mark
-                    }
+                "mark": mark
+            }
+
         else:
             return Exception()
 
