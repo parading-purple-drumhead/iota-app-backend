@@ -32,11 +32,11 @@ def get_post(post_id, request: Request):
             doc = db.collection(u"questionbank").document(post_id)
             random_ref = doc.collection(u"questions")
             i = 0
-            data = [None] * 6
+            data = {}
             easy = random_ref.where(u"difficulty", u"==", u"easy")
             easy_ref = easy.order_by("number").limit(2).stream()
             for info in easy_ref:
-                data[i] = info.to_dict()
+                data[info.id] = info.to_dict()
                 edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
@@ -44,7 +44,7 @@ def get_post(post_id, request: Request):
             medium = random_ref.where(u"difficulty", u"==", u"medium")
             medium_ref = medium.order_by("number").limit(2).stream()
             for info in medium_ref:
-                data[i] = info.to_dict()
+                data[info.id] = info.to_dict()
                 edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
@@ -52,7 +52,7 @@ def get_post(post_id, request: Request):
             hard = random_ref.where(u"difficulty", u"==", u"hard")
             hard_ref = hard.order_by("number").limit(2).stream()
             for info in hard_ref:
-                data[i] = info.to_dict()
+                data[info.id] = info.to_dict()
                 edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
@@ -273,27 +273,23 @@ def edit_question(post_id, question_id, question: Question, request: Request):
 
 
 @router.post("/{post_id}/submit")
-def submit_quiz(request: Request, post_id, quiz: List[Quiz]):
+def submint_quiz(post_id, quiz: List[Quiz]):
     try:
-        uid = request.headers.get("uid")
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
+            doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
-                if quiz[i].answer[0] == quiz[i].response:
-                    mark = mark + 1
-
-            user = db.collection("users").document(uid)
-            edit = user.get().to_dict()
-            marks = edit["points"] + mark
-            user.update({u"points": marks})
+                doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
+                if doc_ref["answer"][0] == quiz[i].answer:
+                    mark += 1
 
             return {
                 "mark": mark
             }
 
         else:
-            raise Exception()
+            return Exception()
 
     except Exception as e:
         print(e)
