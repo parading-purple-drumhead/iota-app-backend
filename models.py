@@ -78,7 +78,7 @@ class User(BaseModel):
 
 class Quiz(BaseModel):
     question_id: Optional[str]
-    response: Optional[str]
+    answer: Optional[str]
 
 
 class Bookmark(BaseModel):
