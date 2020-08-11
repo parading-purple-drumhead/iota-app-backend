@@ -285,7 +285,7 @@ def edit_question(post_id, question_id, question: Question, request: Request):
 
 
 @router.post("/{post_id}/submit")
-def submint_quiz(post_id, quiz: List[Quiz]):
+def submit_quiz(post_id, quiz: List[Quiz], request: Request):
     try:
         result = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()
@@ -297,6 +297,12 @@ def submint_quiz(post_id, quiz: List[Quiz]):
                 doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
                 if doc_ref["answer"][0] == quiz[i].answer:
                     mark += 1
+
+            uid = request.headers.get("uid")
+            user = db.collection(u"users").document(uid)
+            user.update({
+                u"points": firestore.Increment(mark)
+            })
 
             result.update({"mark": mark})
             return result
