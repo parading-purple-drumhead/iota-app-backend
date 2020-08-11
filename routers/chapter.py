@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from models import Chapter
 from routers import db
-from firebase_admin import firestore
 
 
 router = APIRouter()
@@ -12,15 +11,10 @@ def add_chapter(chapter: Chapter, request: Request):
     try:
         uid = request.headers.get("uid")
         course_id = request.headers.get("course_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            doc_ref = db.collection(u"chapters")
-            chapter_ref = doc_ref.add(dict(chapter))
-            print(chapter_ref[1].id)
-            course_ref = db.collection("courses").document(course_id)
-            course_ref.update({
-                u"chapters": firestore.ArrayUnion([chapter_ref[1].id])
-            })
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            chapter_ref = db.collection(u"courses").document(course_id).collection(u"chapters")
+            chapter_ref.add(dict(chapter))
 
         raise Exception()
 
@@ -30,10 +24,18 @@ def add_chapter(chapter: Chapter, request: Request):
 
 
 @router.get("/{chapter_id}", response_model=Chapter)
-def get_chapter(chapter_id):
+def get_chapter(chapter_id, request: Request):
     try:
-        chapter1 = db.collection(u"chapters").document(chapter_id)
-        chapter = chapter1.get().to_dict()
+        course_id = request.headers.get("course_id")
+        course_ref = db.collection(u"courses").document(course_id)
+        chapter = course_ref.collection(u"chapters").document(chapter_id).get().to_dict()
+        post_ids = chapter["post_ids"]
+        chapter["posts"] = []
+        for post_id in post_ids:
+            post = db.collection(u"posts").document(post_id).get()
+            post_dict = post.to_dict()
+            post_dict["id"] = post.id
+            chapter["posts"].append(post_dict)
         return chapter
 
     except Exception as e:
@@ -45,9 +47,11 @@ def get_chapter(chapter_id):
 def edit_chapter(chapter_id, chapter: Chapter, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            chapter_ref = db.collection(u"chapters").document(chapter_id)
+        course_id = request.headers.get("course_id")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            course_ref = db.collection(u"courses").document(course_id)
+            chapter_ref = course_ref.collection(u"chapters").document(chapter_id)
             new_data = chapter.dict(exclude_none=True, exclude_defaults=True)
             chapter_ref.update(dict(new_data))
 
@@ -63,12 +67,11 @@ def delete_chapter(chapter_id, request: Request):
     try:
         uid = request.headers.get("uid")
         course_id = request.headers.get("course_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            db.collection(u"chapters").document(chapter_id).delete()
-            db.collection(u"courses").document(course_id).update({
-                u"chapters": firestore.ArrayRemove([chapter_id])
-            })
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            course_ref = db.collection(u"courses").document(course_id)
+            course_ref.collection(u"chapters").document(chapter_id).delete()
+
         else:
             raise Exception()
 
