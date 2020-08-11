@@ -285,7 +285,7 @@ def edit_question(post_id, question_id, question: Question, request: Request):
 
 
 @router.post("/{post_id}/submit")
-def submint_quiz(post_id, quiz: List[Quiz]):
+def submit_quiz(post_id, quiz: List[Quiz], request: Request):
     try:
         result = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()
