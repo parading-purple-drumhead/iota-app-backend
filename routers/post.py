@@ -74,7 +74,9 @@ def get_post(post_id, request: Request):
         else:
             post_ref = db.collection(u"posts").document(post_id)
             post = post_ref.get().to_dict()
-            comments_ref = post_ref.collection(u"comments").get()
+            comments_collection = post_ref.collection(u"comments")
+            comments_ref = comments_collection.order_by(
+                u"created_at", direction=firestore.Query.DESCENDING).get()
             post["comments"] = []
             for comment in comments_ref:
                 comment_dict = comment.to_dict()
@@ -161,8 +163,18 @@ def add_comment(post_id, comment: Comment):
     try:
         doc_ref = db.collection(u"posts")
         doc = doc_ref.document(post_id).collection(u"comments")
-
         doc.add(dict(comment))
+        comments = []
+        comments_ref = doc.order_by(u"created_at", direction=firestore.Query.DESCENDING).get()
+        for comment in comments_ref:
+            comment_dict = comment.to_dict()
+            user = db.collection(u"users").document(comment_dict["user_id"]).get().to_dict()
+            comment_dict["user_name"] = user["name"]
+            comment_dict["user_avatar"] = user["avatar"]
+            comment_dict["id"] = comment.id
+            comments.append(comment_dict)
+        return comments
+
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -194,8 +206,8 @@ def delete_comment(post_id, comment_id, request: Request):
         uid = request.headers.get("uid")
         if doc_get["user_id"] == uid:
             doc.delete()
-
-        raise Exception()
+        else:
+            raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
