@@ -98,14 +98,14 @@ def add_post(post: Post, request: Request):
         uid = request.headers.get("uid")
         chapter_id = request.headers.get("chapter_id")
         course_id = request.headers.get("course_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            doc_ref = db.collection(u"posts")
-            docref = doc_ref.add(dict(post))
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            post = db.collection(u"posts")
+            post_ref = post.add(dict(post))
             chapter_ref = db.collection("courses").document(course_id)
-            chap = chapter_ref.collection("chapters").document(chapter_id)
-            chap.set({
-                u"post_ids": firestore.ArrayUnion([docref[1].id])
+            chapter = chapter_ref.collection("chapters").document(chapter_id)
+            chapter.set({
+                u"post_ids": firestore.ArrayUnion([post_ref[1].id])
             }, merge=True)
 
         raise Exception()
@@ -119,9 +119,9 @@ def add_post(post: Post, request: Request):
 def edit_post(post_id, post: Post, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            edit = db.collection(u"posts").document(post_id)
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            post = db.collection(u"posts").document(post_id)
             new_data = post.dict(exclude_none=True, exclude_defaults=True)
 
             if "created_at" in new_data or "updated_at" in new_data:
@@ -129,7 +129,7 @@ def edit_post(post_id, post: Post, request: Request):
 
             new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
 
-            edit.update(dict(new_data))
+            post.update(dict(new_data))
         raise Exception()
 
     except Exception as e:
@@ -142,8 +142,8 @@ def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
         chapter_id = request.headers.get("chapter_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             db.collection(u"posts").document(post_id).delete()
             db.collection(u"chapters").document(chapter_id).update({
                 u"posts": firestore.ArrayRemove([post_id])
@@ -159,10 +159,10 @@ def delete_post(post_id, request: Request):
 @router.post("/{post_id}/comment")
 def add_comment(post_id, comment: Comment):
     try:
-        doc_ref = db.collection(u"posts")
-        doc = doc_ref.document(post_id).collection(u"comments")
+        post = db.collection(u"posts")
+        comment_ref = post.document(post_id).collection(u"comments")
 
-        doc.add(dict(comment))
+        comment_ref.add(dict(comment))
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -171,13 +171,13 @@ def add_comment(post_id, comment: Comment):
 @router.put("/{post_id}/comment/{comment_id}")
 def edit_comment(post_id, comment_id, comment: Comment, request: Request):
     try:
-        doc_ref = db.collection(u"posts").document(post_id)
-        doc = doc_ref.collection(u"comments").document(comment_id)
-        doc_get = doc.get().to_dict()
+        post_ref = db.collection(u"posts").document(post_id)
+        comment_ref = post_ref.collection(u"comments").document(comment_id)
+        comment_get = comment_ref.get().to_dict()
         uid = request.headers.get("uid")
-        if doc_get["user_id"] == uid:
+        if comment_get["user_id"] == uid:
             new_data = comment.dict(exclude_none=True, exclude_defaults=True)
-            doc.update(new_data)
+            comment_get.update(new_data)
 
         raise Exception()
     except Exception as e:
@@ -188,12 +188,12 @@ def edit_comment(post_id, comment_id, comment: Comment, request: Request):
 @router.delete("/{post_id}/comment/{comment_id}")
 def delete_comment(post_id, comment_id, request: Request):
     try:
-        doc_ref = db.collection(u"posts").document(post_id)
-        doc = doc_ref.collection(u"comments").document(comment_id)
-        doc_get = doc.get().to_dict()
+        post_ref = db.collection(u"posts").document(post_id)
+        comment_ref = post_ref.collection(u"comments").document(comment_id)
+        comment_get = comment_ref.get().to_dict()
         uid = request.headers.get("uid")
-        if doc_get["user_id"] == uid:
-            doc.delete()
+        if comment_get["user_id"] == uid:
+            comment_ref.delete()
 
         raise Exception()
     except Exception as e:
@@ -205,13 +205,13 @@ def delete_comment(post_id, comment_id, request: Request):
 def add_question(post_id, question: Question, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             post = db.collection(u"posts").document(post_id).get().to_dict()
             if post["type"] == "quiz":
-                doc_ref = db.collection(u"questionbank").document(post_id)
-                doc1 = doc_ref.collection(u"questions")
-                doc1.add(dict(question))
+                ques_postid = db.collection(u"questionbank").document(post_id)
+                question_ref = ques_postid.collection(u"questions")
+                question_ref.add(dict(question))
             else:
                 raise Exception()
 
@@ -228,8 +228,8 @@ def get_all_question(post_id):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
-            doc = db.collection(u"questionbank").document(post_id)
-            question_ref = doc.collection("questions").stream()
+            ques_postid = db.collection(u"questionbank").document(post_id)
+            question_ref = ques_postid.collection("questions").stream()
             data = {}
             for question in question_ref:
                 data[question.id] = question.to_dict()
@@ -246,12 +246,12 @@ def get_all_question(post_id):
 def delete_question(question_id, post_id, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc1 = db.collection(u"users").document(uid).get().to_dict()
-        if doc1["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             post = db.collection(u"posts").document(post_id).get().to_dict()
             if post["type"] == "quiz":
-                doc = db.collection(u"questionbank").document(post_id)
-                doc.collection("questions").document(question_id).delete()
+                ques_postid = db.collection(u"questionbank").document(post_id)
+                ques_postid.collection("questions").document(question_id).delete()
             else:
                 raise Exception()
         else:
@@ -266,14 +266,14 @@ def delete_question(question_id, post_id, request: Request):
 def edit_question(post_id, question_id, question: Question, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc1 = db.collection(u"users").document(uid).get().to_dict()
-        if doc1["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             post = db.collection(u"posts").document(post_id).get().to_dict()
             if post["type"] == "quiz":
-                doc = db.collection(u"questionbank").document(post_id)
-                doc_ref = doc.collection("questions").document(question_id)
+                ques_postid = db.collection(u"questionbank").document(post_id)
+                question_ref = ques_postid.collection("questions").document(question_id)
                 new = question.dict(exclude_none=True, exclude_defaults=True)
-                doc_ref.update(new)
+                question_ref.update(new)
             else:
                 raise Exception()
         else:
@@ -285,7 +285,7 @@ def edit_question(post_id, question_id, question: Question, request: Request):
 
 
 @router.post("/{post_id}/submit")
-def submit_quiz(post_id, quiz: List[Quiz], request: Request):
+def submint_quiz(post_id, quiz: List[Quiz]):
     try:
         result = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()

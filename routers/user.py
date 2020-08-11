@@ -113,8 +113,8 @@ def get_user_info(user_id):
 @router.put("/{user_id}")
 def edit_user(user_id, user: User):
     try:
-        edit = db.collection(u"users").document(user_id)
-        edit.update(user.dict(exclude_none=True, exclude_defaults=True))
+        user = db.collection(u"users").document(user_id)
+        user.update(user.dict(exclude_none=True, exclude_defaults=True))
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -123,8 +123,8 @@ def edit_user(user_id, user: User):
 @router.post("/{user_id}/add")
 def add_user(user_id, user: User):
     try:
-        doc_ref = db.collection(u"users")
-        doc_ref.add(dict(user), document_id=user_id)
+        user = db.collection(u"users")
+        user.add(dict(user), document_id=user_id)
 
     except AlreadyExists as e:
         print(e)

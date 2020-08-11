@@ -11,10 +11,10 @@ def add_chapter(chapter: Chapter, request: Request):
     try:
         uid = request.headers.get("uid")
         course_id = request.headers.get("course_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            collection_ref = db.collection(u"courses").document(course_id).collection(u"chapters")
-            collection_ref.add(dict(chapter))
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            chapter_ref = db.collection(u"courses").document(course_id).collection(u"chapters")
+            chapter_ref.add(dict(chapter))
 
         raise Exception()
 
@@ -48,8 +48,8 @@ def edit_chapter(chapter_id, chapter: Chapter, request: Request):
     try:
         uid = request.headers.get("uid")
         course_id = request.headers.get("course_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             course_ref = db.collection(u"courses").document(course_id)
             chapter_ref = course_ref.collection(u"chapters").document(chapter_id)
             new_data = chapter.dict(exclude_none=True, exclude_defaults=True)
@@ -67,8 +67,8 @@ def delete_chapter(chapter_id, request: Request):
     try:
         uid = request.headers.get("uid")
         course_id = request.headers.get("course_id")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             course_ref = db.collection(u"courses").document(course_id)
             course_ref.collection(u"chapters").document(chapter_id).delete()
 
