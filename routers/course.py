@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from models import Course
 from typing import Dict
 from routers import db
+from firebase_admin import firestore
 
 router = APIRouter()
 
@@ -96,6 +97,30 @@ def delete_course(course_id, request: Request):
             doc_ref = db.collection(u"courses").document(course_id)
             doc_ref.delete()
         raise Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{course_id}/enroll")
+def enroll_course(course_id, request: Request):
+    try:
+        uid = request.headers.get("uid")
+        course = db.collection(u"courses").document(course_id)
+        course.set({u"enrollments": firestore.ArrayUnion([uid])}, merge=True)
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{course_id}/drop")
+def drop_course(course_id, request: Request):
+    try:
+        uid = request.headers.get("uid")
+        course = db.collection(u"courses").document(course_id)
+        course.set({u"enrollments": firestore.ArrayRemove([uid])}, merge=True)
 
     except Exception as e:
         print(e)

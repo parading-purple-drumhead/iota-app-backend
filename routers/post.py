@@ -36,7 +36,11 @@ def get_post(post_id, request: Request):
             easy = random_ref.where(u"difficulty", u"==", u"easy")
             easy_ref = easy.order_by("number").limit(2).stream()
             for info in easy_ref:
-                data[info.id] = info.to_dict()
+                info_dict = info.to_dict()
+                del info_dict["answer"]
+                del info_dict["difficulty"]
+                del info_dict["number"]
+                data[info.id] = info_dict
                 edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
@@ -44,7 +48,11 @@ def get_post(post_id, request: Request):
             medium = random_ref.where(u"difficulty", u"==", u"medium")
             medium_ref = medium.order_by("number").limit(2).stream()
             for info in medium_ref:
-                data[info.id] = info.to_dict()
+                info_dict = info.to_dict()
+                del info_dict["answer"]
+                del info_dict["difficulty"]
+                del info_dict["number"]
+                data[info.id] = info_dict
                 edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
@@ -52,7 +60,11 @@ def get_post(post_id, request: Request):
             hard = random_ref.where(u"difficulty", u"==", u"hard")
             hard_ref = hard.order_by("number").limit(2).stream()
             for info in hard_ref:
-                data[info.id] = info.to_dict()
+                info_dict = info.to_dict()
+                del info_dict["answer"]
+                del info_dict["difficulty"]
+                del info_dict["number"]
+                data[info.id] = info_dict
                 edit = doc.collection(u"questions").document(info.id)
                 edit.update({u"number": random.randint(1, 100)})
                 i = i + 1
@@ -275,18 +287,19 @@ def edit_question(post_id, question_id, question: Question, request: Request):
 @router.post("/{post_id}/submit")
 def submint_quiz(post_id, quiz: List[Quiz]):
     try:
+        result = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
+                result.update({quiz[i].question_id: quiz[i].answer})
                 doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
                 if doc_ref["answer"][0] == quiz[i].answer:
                     mark += 1
 
-            return {
-                "mark": mark
-            }
+            result.update({"mark": mark})
+            return result
 
         else:
             return Exception()
