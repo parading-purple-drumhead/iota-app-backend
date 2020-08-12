@@ -74,7 +74,9 @@ def get_post(post_id, request: Request):
         else:
             post_ref = db.collection(u"posts").document(post_id)
             post = post_ref.get().to_dict()
-            comments_ref = post_ref.collection(u"comments").get()
+            comments_collection = post_ref.collection(u"comments")
+            comments_ref = comments_collection.order_by(
+                u"created_at", direction=firestore.Query.DESCENDING).get()
             post["comments"] = []
             for comment in comments_ref:
                 comment_dict = comment.to_dict()
@@ -100,8 +102,9 @@ def add_post(post: Post, request: Request):
         course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
-            post = db.collection(u"posts")
-            post_ref = post.add(dict(post))
+            posts_ref = db.collection(u"posts")
+            post.created_at = datetime.now()
+            post_ref = posts_ref.add(dict(post))
             chapter_ref = db.collection("courses").document(course_id)
             chapter = chapter_ref.collection("chapters").document(chapter_id)
             chapter.set({
@@ -157,12 +160,24 @@ def delete_post(post_id, request: Request):
 
 
 @router.post("/{post_id}/comment")
-def add_comment(post_id, comment: Comment):
+def add_comment(post_id, comment: Comment, request: Request):
     try:
-        post = db.collection(u"posts")
-        comment_ref = post.document(post_id).collection(u"comments")
+        doc_ref = db.collection(u"posts")
+        doc = doc_ref.document(post_id).collection(u"comments")
+        comment.created_at = datetime.now()
+        comment.user_id = request.headers.get("uid")
+        doc.add(dict(comment))
+        comments = []
+        comments_ref = doc.order_by(u"created_at", direction=firestore.Query.DESCENDING).get()
+        for comment in comments_ref:
+            comment_dict = comment.to_dict()
+            user = db.collection(u"users").document(comment_dict["user_id"]).get().to_dict()
+            comment_dict["user_name"] = user["name"]
+            comment_dict["user_avatar"] = user["avatar"]
+            comment_dict["id"] = comment.id
+            comments.append(comment_dict)
+        return comments
 
-        comment_ref.add(dict(comment))
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -285,21 +300,29 @@ def edit_question(post_id, question_id, question: Question, request: Request):
 
 
 @router.post("/{post_id}/submit")
-def submint_quiz(post_id, quiz: List[Quiz]):
+def submit_quiz(post_id, quiz: List[Quiz], request: Request):
     try:
-        result = {}
+        result = []
+        results = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
-                result.update({quiz[i].question_id: quiz[i].answer})
+                result.append({"question_id": quiz[i].question_id, "answer": quiz[i].answer})
                 doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
                 if doc_ref["answer"][0] == quiz[i].answer:
                     mark += 1
 
-            result.update({"mark": mark})
-            return result
+            results.update({"response": result})
+            uid = request.headers.get("uid")
+            user = db.collection(u"users").document(uid)
+            user.update({
+                u"points": firestore.Increment(mark)
+            })
+
+            results.update({"mark": mark})
+            return results
 
         else:
             return Exception()
