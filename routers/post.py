@@ -102,9 +102,9 @@ def add_post(post: Post, request: Request):
         course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
-            post = db.collection(u"posts")
+            posts_ref = db.collection(u"posts")
             post.created_at = datetime.now()
-            post_ref = post.add(dict(post))
+            post_ref = posts_ref.add(dict(post))
             chapter_ref = db.collection("courses").document(course_id)
             chapter = chapter_ref.collection("chapters").document(chapter_id)
             chapter.set({
