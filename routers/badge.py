@@ -46,8 +46,8 @@ def add_badge(badge: Badge):
 def edit_badge(badge_id, badge: Badge):
     try:
 
-        doc_ref = db.collection(u"badges").document(badge_id)
-        doc_ref.update(badge.dict(exclude_none=True, exclude_defaults=True))
+        badge_ref = db.collection(u"badges").document(badge_id)
+        badge_ref.update(badge.dict(exclude_none=True, exclude_defaults=True))
 
     except Exception as e:
         print(e)
@@ -58,8 +58,8 @@ def edit_badge(badge_id, badge: Badge):
 def delete_badge(badge_id):
     try:
 
-        doc_ref = db.collection(u"badges").document(badge_id)
-        doc_ref.delete()
+        badge_ref = db.collection(u"badges").document(badge_id)
+        badge_ref.delete()
 
     except Exception as e:
         print(e)

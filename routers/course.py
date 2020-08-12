@@ -62,8 +62,8 @@ def get_course(course_id):
 def add_course(course: Course, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
             courses_ref = db.collection(u"courses")
             courses_ref.add(dict(course))
         raise Exception()
@@ -77,10 +77,10 @@ def add_course(course: Course, request: Request):
 def edit_course(course_id, course: Course, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc_ref = db.collection(u"users").document(uid).get().to_dict()
-        if doc_ref["admin"]:
-            doc = db.collection(u"courses").document(course_id)
-            doc.update(course.dict(exclude_none=True, exclude_defaults=True))
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            course = db.collection(u"courses").document(course_id)
+            course.update(course.dict(exclude_none=True, exclude_defaults=True))
         raise Exception()
 
     except Exception as e:
@@ -92,10 +92,10 @@ def edit_course(course_id, course: Course, request: Request):
 def delete_course(course_id, request: Request):
     try:
         uid = request.headers.get("uid")
-        doc = db.collection(u"users").document(uid).get().to_dict()
-        if doc["admin"]:
-            doc_ref = db.collection(u"courses").document(course_id)
-            doc_ref.delete()
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            course = db.collection(u"courses").document(course_id)
+            course.delete()
         raise Exception()
 
     except Exception as e:
