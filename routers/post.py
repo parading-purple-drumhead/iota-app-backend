@@ -103,6 +103,7 @@ def add_post(post: Post, request: Request):
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             post = db.collection(u"posts")
+            post.created_at = datetime.now()
             post_ref = post.add(dict(post))
             chapter_ref = db.collection("courses").document(course_id)
             chapter = chapter_ref.collection("chapters").document(chapter_id)
@@ -159,10 +160,12 @@ def delete_post(post_id, request: Request):
 
 
 @router.post("/{post_id}/comment")
-def add_comment(post_id, comment: Comment):
+def add_comment(post_id, comment: Comment, request: Request):
     try:
         doc_ref = db.collection(u"posts")
         doc = doc_ref.document(post_id).collection(u"comments")
+        comment.created_at = datetime.now()
+        comment.user_id = request.headers.get("uid")
         doc.add(dict(comment))
         comments = []
         comments_ref = doc.order_by(u"created_at", direction=firestore.Query.DESCENDING).get()
