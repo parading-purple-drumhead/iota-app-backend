@@ -318,8 +318,8 @@ def submit_quiz(post_id, quiz: List[Quiz], request: Request):
             doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
-                result.append({"question_id": quiz[i].question_id, "answer": quiz[i].answer})
                 doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
+                result.append({"question_id": quiz[i].question_id, "answer": doc_ref["answer"][0]})
                 if doc_ref["answer"][0] == quiz[i].answer:
                     mark += 1
 
