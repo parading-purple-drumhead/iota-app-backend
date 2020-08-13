@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from models import User, Progress
+from models import User, ReturnUser, Progress
 from routers import db
 from google.api_core.exceptions import AlreadyExists
 from firebase_admin import firestore
@@ -75,7 +75,7 @@ def recomended_course(user_id):
             edit = db.collection(u"users").document(user_id)
             edit.update({
                 u"recomended_course": firestore.ArrayUnion([recommended_courses[k]])
-                })
+            })
             k = k + 1
 
     except Exception as e:
@@ -83,7 +83,7 @@ def recomended_course(user_id):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{user_id}", response_model=User)
+@router.get("/{user_id}", response_model=ReturnUser)
 def get_user_info(user_id):
 
     try:
@@ -98,7 +98,14 @@ def get_user_info(user_id):
             user["activity"] = {}
 
         if user["bookmarks"] is None:
+            user["bookmarks"] = {}
+        else:
+            bookmarks_list = user["bookmarks"]
             user["bookmarks"] = []
+            for post_bookmark in bookmarks_list["posts"]:
+                user["bookmarks"].append(post_bookmark)
+            for course_bookmark in bookmarks_list["courses"]:
+                user["bookmarks"].append(course_bookmark)
 
         if user["recomended_course"] is None:
             user["recomended_course"] = []
