@@ -51,7 +51,7 @@ def cprogress(user_id):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def recomended_course(user_id):
+def recommended_course(user_id):
     try:
         courses = db.collection(u"users").document(user_id).collection(u"progress").stream()
         course = []
@@ -60,21 +60,21 @@ def recomended_course(user_id):
 
         i = 0
         j = 0
-        recomended_course = set()
+        recommended_course = set()
         for i in range(len(course)):
             q = db.collection("courses").document(course[i]).get().to_dict()
             for j in range(len(q["recommended_courses"])):
-                recomended_course.add(q["recommended_courses"][j])
+                recommended_course.add(q["recommended_courses"][j])
                 j = j + 1
 
             i = i + 1
 
-        recommended_courses = list(recomended_course)
+        recommended_courses = list(recommended_course)
         k = 0
         for k in range(len(recommended_courses)):
             edit = db.collection(u"users").document(user_id)
             edit.update({
-                u"recomended_course": firestore.ArrayUnion([recommended_courses[k]])
+                u"recommended_course": firestore.ArrayUnion([recommended_courses[k]])
             })
             k = k + 1
 
@@ -87,7 +87,7 @@ def recomended_course(user_id):
 def get_user_info(user_id):
 
     try:
-        recomended_course(user_id)
+        recommended_course(user_id)
         cprogress(user_id)
         user = db.collection(u"users").document(user_id).get().to_dict()
 
@@ -107,8 +107,8 @@ def get_user_info(user_id):
             for course_bookmark in bookmarks_list["courses"]:
                 user["bookmarks"].append(course_bookmark)
 
-        if user["recomended_course"] is None:
-            user["recomended_course"] = []
+        if user["recommended_course"] is None:
+            user["recommended_course"] = []
 
         return user
 
