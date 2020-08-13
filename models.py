@@ -78,6 +78,22 @@ class User(BaseModel):
     course_progress: Optional[Dict[str, float]] = None
 
 
+class ReturnUser(BaseModel):
+    name: Optional[str]
+    avatar: Optional[str]
+    admin: Optional[bool]
+    email: Optional[EmailStr]
+    phone: Optional[str]
+    points: Optional[int] = 0
+    college: Optional[str]
+    joined: Optional[datetime]
+    badge: Optional[List[str]] = []
+    bookmarks: Optional[List[str]]
+    activity: Optional[Dict[str, int]] = None
+    recomended_course: Optional[List[str]] = None
+    course_progress: Optional[Dict[str, float]] = None
+
+
 class Quiz(BaseModel):
     question_id: Optional[str]
     answer: Optional[str]
