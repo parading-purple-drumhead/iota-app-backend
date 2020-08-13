@@ -74,17 +74,6 @@ def get_post(post_id, request: Request):
         else:
             post_ref = db.collection(u"posts").document(post_id)
             post = post_ref.get().to_dict()
-            comments_collection = post_ref.collection(u"comments")
-            comments_ref = comments_collection.order_by(
-                u"created_at", direction=firestore.Query.DESCENDING).get()
-            post["comments"] = []
-            for comment in comments_ref:
-                comment_dict = comment.to_dict()
-                user = db.collection(u"users").document(comment_dict["user_id"]).get().to_dict()
-                comment_dict["user_name"] = user["name"]
-                comment_dict["user_avatar"] = user["avatar"]
-                comment_dict["id"] = comment.id
-                post["comments"].append(comment_dict)
             return post
 
         raise Exception()
@@ -153,6 +142,26 @@ def delete_post(post_id, request: Request):
             })
         else:
             raise Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{post_id}/comment")
+def get_comment(post_id):
+    try:
+        post_ref = db.collection(u"posts").document(post_id).collection(u"comments")
+        comment_ref = post_ref.order_by(u"created_at", direction=firestore.Query.DESCENDING).get()
+        comments = []
+        for comment in comment_ref:
+            comment_dict = comment.to_dict()
+            user = db.collection(u"users").document(comment_dict["user_id"]).get().to_dict()
+            comment_dict["user_name"] = user["name"]
+            comment_dict["user_avatar"] = user["avatar"]
+            comment_dict["id"] = comment.id
+            comments.append(comment_dict)
+        return comments
 
     except Exception as e:
         print(e)

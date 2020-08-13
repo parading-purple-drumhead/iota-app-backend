@@ -79,8 +79,8 @@ def edit_course(course_id, course: Course, request: Request):
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
-            course = db.collection(u"courses").document(course_id)
-            course.update(course.dict(exclude_none=True, exclude_defaults=True))
+            course_ref = db.collection(u"courses").document(course_id)
+            course_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
         raise Exception()
 
     except Exception as e:
