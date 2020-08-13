@@ -74,7 +74,7 @@ class User(BaseModel):
     badge: Optional[List[str]] = []
     bookmarks: Optional[Dict[str, List[str]]]
     activity: Optional[Dict[str, int]] = None
-    recomended_course: Optional[List[str]] = None
+    recommended_course: Optional[List[str]] = None
     course_progress: Optional[Dict[str, float]] = None
 
 
@@ -90,7 +90,7 @@ class ReturnUser(BaseModel):
     badge: Optional[List[str]] = []
     bookmarks: Optional[List[str]]
     activity: Optional[Dict[str, int]] = None
-    recomended_course: Optional[List[str]] = None
+    recommended_course: Optional[List[str]] = None
     course_progress: Optional[Dict[str, float]] = None
 
 
