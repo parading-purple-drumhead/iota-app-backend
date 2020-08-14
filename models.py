@@ -60,6 +60,7 @@ class Course(BaseModel):
 class Progress(BaseModel):
     progress: Optional[str]
     post_id: Optional[str]
+    points: Optional[str]
 
 
 class User(BaseModel):
