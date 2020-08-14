@@ -3,6 +3,7 @@ from models import User, ReturnUser, Progress
 from routers import db
 from google.api_core.exceptions import AlreadyExists
 from firebase_admin import firestore
+from datetime import date
 
 router = APIRouter()
 
@@ -154,8 +155,12 @@ def delete_user(user_id):
 def progress(request: Request, course_id, progress: Progress):
     try:
         uid = request.headers.get("uid")
+        activity = db.collection(u"users").document(uid)
         update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
         update.set({u"post_progress": {progress.post_id: progress.progress}}, merge=True)
+        today = str(date.today())
+        pointt = int(progress.points)
+        activity.update({u"activity": {today: firestore.Increment(pointt)}})
 
         return {progress.post_id: progress.progress}
 
