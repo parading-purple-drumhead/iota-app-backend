@@ -131,6 +131,10 @@ def edit_user(user_id, user: User):
 @router.post("/{user_id}/add")
 def add_user(user_id, user: User):
     try:
+        user.bookmarks = {
+            u"posts": [],
+            u"courses": []
+        }
         user_ref = db.collection(u"users")
         user_ref.add(dict(user), document_id=user_id)
 

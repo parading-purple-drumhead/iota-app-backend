@@ -100,7 +100,8 @@ def add_post(post: Post, request: Request):
                 u"post_ids": firestore.ArrayUnion([post_ref[1].id])
             }, merge=True)
 
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -122,7 +123,8 @@ def edit_post(post_id, post: Post, request: Request):
             new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
 
             post.update(dict(new_data))
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -203,7 +205,8 @@ def edit_comment(post_id, comment_id, comment: Comment, request: Request):
             new_data = comment.dict(exclude_none=True, exclude_defaults=True)
             comment_get.update(new_data)
 
-        raise Exception()
+        else:
+            raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -219,7 +222,8 @@ def delete_comment(post_id, comment_id, request: Request):
         if comment_get["user_id"] == uid:
             comment_ref.delete()
 
-        raise Exception()
+        else:
+            raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
