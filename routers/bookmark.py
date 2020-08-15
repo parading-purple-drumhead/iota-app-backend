@@ -53,13 +53,14 @@ def get_bookmarks(request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("")
-def remove_bookmark(bookmark: Bookmark, request: Request):
+@router.delete("/{bookmark_id}")
+def remove_bookmark(request: Request, bookmark_id):
     try:
         uid = request.headers.get("uid")
+        type = request.headers.get("type")
         user = db.collection(u"users").document(uid)
         user.update({
-            "bookmarks."+bookmark.type: firestore.ArrayRemove([bookmark.id])
+            "bookmarks." + type: firestore.ArrayRemove([bookmark_id])
         })
 
     except Exception as e:

@@ -16,7 +16,8 @@ def add_chapter(chapter: Chapter, request: Request):
             chapter_ref = db.collection(u"courses").document(course_id).collection(u"chapters")
             chapter_ref.add(dict(chapter))
 
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -55,7 +56,8 @@ def edit_chapter(chapter_id, chapter: Chapter, request: Request):
             new_data = chapter.dict(exclude_none=True, exclude_defaults=True)
             chapter_ref.update(dict(new_data))
 
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)

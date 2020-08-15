@@ -32,7 +32,6 @@ class Post(BaseModel):
     resource_url: Optional[AnyUrl]
     content: Optional[str]
     questions: Optional[Dict[str, Question]] = []
-    comments: Optional[List[Comment]]
 
 
 class Badge(BaseModel):

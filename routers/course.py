@@ -66,7 +66,8 @@ def add_course(course: Course, request: Request):
         if user["admin"]:
             courses_ref = db.collection(u"courses")
             courses_ref.add(dict(course))
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -81,7 +82,8 @@ def edit_course(course_id, course: Course, request: Request):
         if user["admin"]:
             course_ref = db.collection(u"courses").document(course_id)
             course_ref.update(course.dict(exclude_none=True, exclude_defaults=True))
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -96,7 +98,8 @@ def delete_course(course_id, request: Request):
         if user["admin"]:
             course = db.collection(u"courses").document(course_id)
             course.delete()
-        raise Exception()
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
