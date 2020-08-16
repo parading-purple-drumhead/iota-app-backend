@@ -13,7 +13,7 @@ def add_bookmark(bookmark: Bookmark, request: Request):
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid)
         user.update({
-            "bookmarks."+bookmark.type: firestore.ArrayUnion([bookmark.id])
+            u"bookmarks."+bookmark.type: firestore.ArrayUnion([bookmark.id])
         })
 
     except Exception as e:
@@ -34,8 +34,7 @@ def get_bookmarks(request: Request):
             post_bookmark = {}
             post_bookmark["id"] = post.id
             post_bookmark["title"] = post_dict["title"]
-            post_bookmark["type"] = "post"
-            post_bookmark["post_type"] = post_dict["type"]
+            post_bookmark["type"] = post_dict["type"]
             bookmarks.append(post_bookmark)
         for course_bookmark_id in bookmarks_list["courses"]:
             course = db.collection(u"courses").document(course_bookmark_id).get()
@@ -60,7 +59,7 @@ def remove_bookmark(request: Request, bookmark_id):
         type = request.headers.get("type")
         user = db.collection(u"users").document(uid)
         user.update({
-            "bookmarks." + type: firestore.ArrayRemove([bookmark_id])
+            u"bookmarks." + type: firestore.ArrayRemove([bookmark_id])
         })
 
     except Exception as e:

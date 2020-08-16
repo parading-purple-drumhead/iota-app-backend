@@ -94,11 +94,11 @@ def add_post(post: Post, request: Request):
             posts_ref = db.collection(u"posts")
             post.created_at = datetime.now()
             post_ref = posts_ref.add(dict(post))
-            chapter_ref = db.collection("courses").document(course_id)
-            chapter = chapter_ref.collection("chapters").document(chapter_id)
-            chapter.set({
+            course_ref = db.collection("courses").document(course_id)
+            chapter = course_ref.collection("chapters").document(chapter_id)
+            chapter.update({
                 u"post_ids": firestore.ArrayUnion([post_ref[1].id])
-            }, merge=True)
+            })
 
         else:
             raise Exception()
@@ -114,7 +114,7 @@ def edit_post(post_id, post: Post, request: Request):
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
-            post = db.collection(u"posts").document(post_id)
+            post_ref = db.collection(u"posts").document(post_id)
             new_data = post.dict(exclude_none=True, exclude_defaults=True)
 
             if "created_at" in new_data or "updated_at" in new_data:
@@ -122,7 +122,7 @@ def edit_post(post_id, post: Post, request: Request):
 
             new_data["updated_at"] = datetime.now(timezone("Asia/Kolkata"))
 
-            post.update(dict(new_data))
+            post_ref.update(dict(new_data))
         else:
             raise Exception()
 
@@ -136,11 +136,13 @@ def delete_post(post_id, request: Request):
     try:
         uid = request.headers.get("uid")
         chapter_id = request.headers.get("chapter_id")
+        course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             db.collection(u"posts").document(post_id).delete()
-            db.collection(u"chapters").document(chapter_id).update({
-                u"posts": firestore.ArrayRemove([post_id])
+            course_ref = db.collection(u"courses").document(course_id)
+            course_ref.collection(u"chapters").document(chapter_id).update({
+                u"post_ids": firestore.ArrayRemove([post_id])
             })
         else:
             raise Exception()
@@ -203,7 +205,7 @@ def edit_comment(post_id, comment_id, comment: Comment, request: Request):
         uid = request.headers.get("uid")
         if comment_get["user_id"] == uid:
             new_data = comment.dict(exclude_none=True, exclude_defaults=True)
-            comment_get.update(new_data)
+            comment_ref.update(new_data)
 
         else:
             raise Exception()
