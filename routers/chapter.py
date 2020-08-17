@@ -6,11 +6,10 @@ from routers import db
 router = APIRouter()
 
 
-@router.post("/add")
-def add_chapter(chapter: Chapter, request: Request):
+@router.post("/{course_id}/add")
+def add_chapter(chapter: Chapter, request: Request, course_id):
     try:
         uid = request.headers.get("uid")
-        course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             chapter_ref = db.collection(u"courses").document(course_id).collection(u"chapters")
@@ -24,10 +23,9 @@ def add_chapter(chapter: Chapter, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{chapter_id}", response_model=Chapter)
-def get_chapter(chapter_id, request: Request):
+@router.get("/{course_id}/{chapter_id}", response_model=Chapter)
+def get_chapter(chapter_id, course_id):
     try:
-        course_id = request.headers.get("course_id")
         course_ref = db.collection(u"courses").document(course_id)
         chapter = course_ref.collection(u"chapters").document(chapter_id).get().to_dict()
         post_ids = chapter["post_ids"]
@@ -44,11 +42,10 @@ def get_chapter(chapter_id, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put("/{chapter_id}")
-def edit_chapter(chapter_id, chapter: Chapter, request: Request):
+@router.put("/{course_id}/{chapter_id}")
+def edit_chapter(chapter_id, chapter: Chapter, request: Request, course_id):
     try:
         uid = request.headers.get("uid")
-        course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             course_ref = db.collection(u"courses").document(course_id)
@@ -64,11 +61,10 @@ def edit_chapter(chapter_id, chapter: Chapter, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{chapter_id}")
-def delete_chapter(chapter_id, request: Request):
+@router.delete("/{course_id}/{chapter_id}")
+def delete_chapter(chapter_id, course_id, request: Request):
     try:
         uid = request.headers.get("uid")
-        course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             course_ref = db.collection(u"courses").document(course_id)
