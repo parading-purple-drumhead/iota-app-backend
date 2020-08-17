@@ -83,12 +83,10 @@ def get_post(post_id, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/add")
-def add_post(post: Post, request: Request):
+@router.post("/add/{course_id}/{chapter_id}")
+def add_post(post: Post, request: Request, course_id, chapter_id):
     try:
         uid = request.headers.get("uid")
-        chapter_id = request.headers.get("chapter_id")
-        course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             posts_ref = db.collection(u"posts")
@@ -131,12 +129,10 @@ def edit_post(post_id, post: Post, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{post_id}")
-def delete_post(post_id, request: Request):
+@router.delete("/{course_id}/{chapter_id}/{post_id}")
+def delete_post(post_id, request: Request, course_id, chapter_id):
     try:
         uid = request.headers.get("uid")
-        chapter_id = request.headers.get("chapter_id")
-        course_id = request.headers.get("course_id")
         user = db.collection(u"users").document(uid).get().to_dict()
         if user["admin"]:
             db.collection(u"posts").document(post_id).delete()
@@ -189,7 +185,6 @@ def add_comment(post_id, comment: Comment, request: Request):
             comment_dict["user_avatar"] = user["avatar"]
             comment_dict["id"] = comment.id
             comments.append(comment_dict)
-        return comments
 
     except Exception as e:
         print(e)

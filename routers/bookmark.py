@@ -56,10 +56,10 @@ def get_bookmarks(request: Request):
 def remove_bookmark(request: Request, bookmark_id):
     try:
         uid = request.headers.get("uid")
-        type = request.headers.get("type")
         user = db.collection(u"users").document(uid)
         user.update({
-            u"bookmarks." + type: firestore.ArrayRemove([bookmark_id])
+            u"bookmarks.posts": firestore.ArrayRemove([bookmark_id]),
+            u"bookmarks.courses": firestore.ArrayRemove([bookmark_id])
         })
 
     except Exception as e:

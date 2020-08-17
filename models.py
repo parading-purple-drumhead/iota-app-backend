@@ -29,7 +29,7 @@ class Post(BaseModel):
     updated_at: Optional[datetime]
     description: Optional[str]
     url: Optional[str]
-    resource_url: Optional[AnyUrl]
+    resource_url: Optional[Dict[str, AnyUrl]]
     content: Optional[str]
     questions: Optional[Dict[str, Question]] = []
 
@@ -49,7 +49,6 @@ class Chapter(BaseModel):
 
 class Course(BaseModel):
     description: Optional[str]
-    enrollments: Optional[List[str]] = []
     name: Optional[str]
     rating: Optional[float] = 0.0
     chapters: Optional[List[Chapter]] = []

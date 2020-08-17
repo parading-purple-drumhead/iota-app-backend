@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from models import Badge
 from routers import db
 from typing import Dict
@@ -32,10 +32,15 @@ def get_badge(badge_id):
 
 
 @router.post("/add")
-def add_badge(badge: Badge):
+def add_badge(badge: Badge, request: Request):
     try:
-        badge_ref = db.collection(u"badges")
-        badge_ref.add(dict(badge))
+        uid = request.headers.get("uid")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            badge_ref = db.collection(u"badges")
+            badge_ref.add(dict(badge))
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -43,11 +48,15 @@ def add_badge(badge: Badge):
 
 
 @router.put("/{badge_id}")
-def edit_badge(badge_id, badge: Badge):
+def edit_badge(badge_id, badge: Badge, request: Request):
     try:
-
-        badge_ref = db.collection(u"badges").document(badge_id)
-        badge_ref.update(badge.dict(exclude_none=True, exclude_defaults=True))
+        uid = request.headers.get("uid")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            badge_ref = db.collection(u"badges").document(badge_id)
+            badge_ref.update(badge.dict(exclude_none=True, exclude_defaults=True))
+        else:
+            raise Exception()
 
     except Exception as e:
         print(e)
@@ -55,12 +64,15 @@ def edit_badge(badge_id, badge: Badge):
 
 
 @router.delete("/{badge_id}")
-def delete_badge(badge_id):
+def delete_badge(badge_id, request: Request):
     try:
-
-        badge_ref = db.collection(u"badges").document(badge_id)
-        badge_ref.delete()
-
+        uid = request.headers.get("uid")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            badge_ref = db.collection(u"badges").document(badge_id)
+            badge_ref.delete()
+        else:
+            raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))

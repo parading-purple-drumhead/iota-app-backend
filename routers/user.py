@@ -99,7 +99,7 @@ def get_user_info(user_id):
             user["activity"] = {}
 
         if user["bookmarks"] is None:
-            user["bookmarks"] = {}
+            user["bookmarks"] = []
         else:
             bookmarks_list = user["bookmarks"]
             user["bookmarks"] = []
@@ -119,10 +119,14 @@ def get_user_info(user_id):
 
 
 @router.put("/{user_id}")
-def edit_user(user_id, user: User):
+def edit_user(user_id, user: User, request: Request):
     try:
-        user_ref = db.collection(u"users").document(user_id)
-        user_ref.update(user.dict(exclude_none=True, exclude_defaults=True))
+        uid = request.headers.get("uid")
+        if user_id == uid:
+            user_ref = db.collection(u"users").document(user_id)
+            user_ref.update(user.dict(exclude_none=True, exclude_defaults=True))
+        else:
+            raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -147,9 +151,13 @@ def add_user(user_id, user: User):
 
 
 @router.delete("/{user_id}")
-def delete_user(user_id):
+def delete_user(user_id, request: Request):
     try:
-        db.collection(u"users").document(user_id).delete()
+        uid = request.headers.get("uid")
+        if user_id == uid:
+            db.collection(u"users").document(user_id).delete()
+        else:
+            raise Exception()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
