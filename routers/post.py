@@ -25,7 +25,7 @@ def get_all_posts():
 
 
 @router.get("/{post_id}")
-def get_post(post_id, request: Request):
+def get_post(post_id):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
