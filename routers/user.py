@@ -111,27 +111,29 @@ def get_user_info(user_id):
         if user["recommended_course"] is None:
             user["recommended_course"] = []
 
-        if user["updated_at"] is None:
+        if user["updated_at"] is not None:
+
+            c = {}
+            c = user["updated_at"]
+            s = sorted(c.items(), key=lambda x: x[1], reverse=True)
+            v = dict(s).keys()
+            li = list(v)
+
+            cp = db.collection("users").document(user_id).get().to_dict()
+            var = cp["course_progress"].values()
+            pp = list(var)
+
+            cp_updated = {}
+            j = 0
+            for i in li:
+                cp_updated.update({li[j]: pp[j]})
+                j = j + 1
+
+            del user["course_progress"]
+            user["course_progress"] = cp_updated
+
+        else:
             user["updated_at"] = {}
-
-        c = {}
-        c = user["updated_at"]
-        s = sorted(c.items(), key=lambda x: x[1], reverse=True)
-        v = dict(s).keys()
-        li = list(v)
-
-        cp = db.collection("users").document(user_id).get().to_dict()
-        var = cp["course_progress"].values()
-        pp = list(var)
-
-        cp_updated = {}
-        j = 0
-        for i in li:
-            cp_updated.update({li[j]: pp[j]})
-            j = j + 1
-
-        del user["course_progress"]
-        user["course_progress"] = cp_updated
 
         return user
 
