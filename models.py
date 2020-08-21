@@ -75,6 +75,7 @@ class User(BaseModel):
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
     course_progress: Optional[Dict[str, float]] = None
+    updated_at: Optional[Dict[str, datetime]] = None
 
 
 class ReturnUser(BaseModel):
