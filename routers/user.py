@@ -3,7 +3,7 @@ from models import User, ReturnUser, Progress
 from routers import db
 from google.api_core.exceptions import AlreadyExists
 from firebase_admin import firestore
-from datetime import date
+import datetime
 
 router = APIRouter()
 
@@ -12,7 +12,6 @@ def cprogress(user_id):
     try:
         update = db.collection(u"users").document(user_id).collection(u"progress").stream()
         user = db.collection("users").document(user_id)
-
         courses = []
         j = 0
         for cprogress in update:
@@ -45,6 +44,7 @@ def cprogress(user_id):
 
             course_progress = post_completed/post_c
             user.set({u"course_progress": {courses[j]: course_progress}}, merge=True)
+
             j = j + 1
 
     except Exception as e:
@@ -194,7 +194,8 @@ def progress(request: Request, course_id, progress: Progress):
         activity = db.collection(u"users").document(uid)
         update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
         update.set({u"post_progress": {progress.post_id: progress.progress}}, merge=True)
-        today = str(date.today())
+        activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
+        today = str(datetime.date.today())
         pointt = int(progress.points)
         activity.update({u"activity": {today: firestore.Increment(pointt)}})
 
