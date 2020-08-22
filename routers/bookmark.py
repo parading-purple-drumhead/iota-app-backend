@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from models import Bookmark
 from routers import db
-from firebase_admin import firestore
 
 
 router = APIRouter()
@@ -12,9 +11,8 @@ def add_bookmark(bookmark: Bookmark, request: Request):
     try:
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid)
-        user.update({
-            u"bookmarks."+bookmark.type: firestore.ArrayUnion([bookmark.id])
-        })
+        bookmarks_ref = user.collection(u"bookmarks")
+        bookmarks_ref.add(dict(bookmark))
 
     except Exception as e:
         print(e)
@@ -25,25 +23,29 @@ def add_bookmark(bookmark: Bookmark, request: Request):
 def get_bookmarks(request: Request):
     try:
         uid = request.headers.get("uid")
-        user = db.collection(u"users").document(uid).get().to_dict()
-        bookmarks_list = user["bookmarks"]
+        user = db.collection(u"users").document(uid)
+        bookmarks_ref = user.collection(u"bookmarks").get()
         bookmarks = []
-        for post_bookmark_id in bookmarks_list["posts"]:
-            post = db.collection(u"posts").document(post_bookmark_id).get()
-            post_dict = post.to_dict()
-            post_bookmark = {}
-            post_bookmark["id"] = post.id
-            post_bookmark["title"] = post_dict["title"]
-            post_bookmark["type"] = post_dict["type"]
-            bookmarks.append(post_bookmark)
-        for course_bookmark_id in bookmarks_list["courses"]:
-            course = db.collection(u"courses").document(course_bookmark_id).get()
-            course_dict = course.to_dict()
-            course_bookmark = {}
-            course_bookmark["id"] = course.id
-            course_bookmark["title"] = course_dict["name"]
-            course_bookmark["type"] = "course"
-            bookmarks.append(course_bookmark)
+        for bookmark_ref in bookmarks_ref:
+            bookmark_dict = bookmark_ref.to_dict()
+            bookmark = {}
+            if bookmark_dict["type"] == "posts":
+                post_ref = db.collection(u"posts").document(bookmark_dict["post_id"]).get()
+                post = post_ref.to_dict()
+                bookmark["id"] = bookmark_ref.id
+                bookmark["course_id"] = bookmark_dict["course_id"]
+                bookmark["post_id"] = post_ref.id
+                bookmark["title"] = post["title"]
+                bookmark["type"] = post["type"]
+                bookmarks.append(bookmark)
+            else:
+                course_ref = db.collection(u"courses").document(bookmark_dict["course_id"]).get()
+                course = course_ref.to_dict()
+                bookmark["id"] = bookmark_ref.id
+                bookmark["course_id"] = bookmark_dict["course_id"]
+                bookmark["title"] = course["name"]
+                bookmark["type"] = "course"
+                bookmarks.append(bookmark)
 
         return bookmarks
 
@@ -57,10 +59,8 @@ def remove_bookmark(request: Request, bookmark_id):
     try:
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid)
-        user.update({
-            u"bookmarks.posts": firestore.ArrayRemove([bookmark_id]),
-            u"bookmarks.courses": firestore.ArrayRemove([bookmark_id])
-        })
+        bookmark_ref = user.collection(u"bookmarks").document(bookmark_id)
+        bookmark_ref.delete()
 
     except Exception as e:
         print(e)
