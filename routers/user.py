@@ -90,7 +90,8 @@ def get_user_info(user_id):
     try:
         recommended_course(user_id)
         cprogress(user_id)
-        user = db.collection(u"users").document(user_id).get().to_dict()
+        user_ref = db.collection(u"users").document(user_id)
+        user = user_ref.get().to_dict()
 
         if user["course_progress"] is None:
             user["course_progress"] = {}
@@ -98,18 +99,17 @@ def get_user_info(user_id):
         if user["activity"] is None:
             user["activity"] = {}
 
-        if user["bookmarks"] is None:
-            user["bookmarks"] = []
-        else:
-            bookmarks_list = user["bookmarks"]
-            user["bookmarks"] = []
-            for post_bookmark in bookmarks_list["posts"]:
-                user["bookmarks"].append(post_bookmark)
-            for course_bookmark in bookmarks_list["courses"]:
-                user["bookmarks"].append(course_bookmark)
-
         if user["recommended_course"] is None:
             user["recommended_course"] = []
+
+        user["bookmarks"] = []
+        bookmarks_ref = user_ref.collection(u"bookmarks").get()
+        for bookmark_ref in bookmarks_ref:
+            bookmark_dict = bookmark_ref.to_dict()
+            if bookmark_dict["type"] == "courses":
+                user["bookmarks"].append(bookmark_dict["course_id"])
+            else:
+                user["bookmarks"].append(bookmark_dict["post_id"])
 
         return user
 

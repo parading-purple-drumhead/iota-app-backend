@@ -71,7 +71,6 @@ class User(BaseModel):
     college: Optional[str]
     joined: Optional[datetime]
     badge: Optional[List[str]] = []
-    bookmarks: Optional[Dict[str, List[str]]]
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
     course_progress: Optional[Dict[str, float]] = None
@@ -100,4 +99,5 @@ class Quiz(BaseModel):
 
 class Bookmark(BaseModel):
     type: Optional[Literal["posts", "courses"]]
-    id: Optional[str]
+    post_id: Optional[str]
+    course_id: Optional[str]
