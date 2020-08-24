@@ -30,12 +30,14 @@ def get_all_courses():
 
 
 @router.get("/{course_id}", response_model=Course)
-def get_course(course_id):
+def get_course(course_id, request: Request):
     try:
         course_ref = db.collection(u"courses").document(course_id)
         course = course_ref.get().to_dict()
         chapters = course_ref.collection(u"chapters").get()
         course["chapters"] = []
+        uid = request.headers.get("uid")
+        pro = db.collection(u"users").document(uid)
         for chapter in chapters:
             chapter_dict = chapter.to_dict()
             post_ids = chapter_dict["post_ids"]
@@ -47,6 +49,10 @@ def get_course(course_id):
                 post_dict["id"] = post_id
                 post_dict["title"] = post_details["title"]
                 post_dict["type"] = post_details["type"]
+                if post_dict["type"] == "video":
+                    progress = pro.collection(u"progress").document(course_id).get().to_dict()
+                    post_dict["progress"] = progress["post_progress"][post_id]
+
                 chapter_dict["posts"].append(post_dict)
             chapter_dict["id"] = chapter.id
             course["chapters"].append(chapter_dict)
