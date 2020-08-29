@@ -32,6 +32,7 @@ class Post(BaseModel):
     resource_url: Optional[Dict[str, AnyUrl]]
     content: Optional[str]
     questions: Optional[Dict[str, Question]] = []
+    progress: Optional[float]
 
 
 class Badge(BaseModel):
