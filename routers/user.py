@@ -125,7 +125,7 @@ def get_user_info(user_id):
 
             cp_updated = {}
             j = 0
-            for i in li:
+            for j in li:
                 cp_updated.update({li[j]: pp[j]})
                 j = j + 1
 
