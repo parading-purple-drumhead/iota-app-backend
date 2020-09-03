@@ -72,7 +72,6 @@ class User(BaseModel):
     points: Optional[int] = 0
     college: Optional[str]
     joined: Optional[datetime]
-    bookmarks: Optional[List[str]]
     badge: Optional[List[str]] = []
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
