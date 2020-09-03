@@ -54,6 +54,7 @@ class Course(BaseModel):
     rating: Optional[float] = 0.0
     chapters: Optional[List[Chapter]] = []
     recommended_courses: Optional[List[str]] = []
+    bookmarked_users: Optional[List[str]] = []
 
 
 class Progress(BaseModel):
@@ -71,6 +72,7 @@ class User(BaseModel):
     points: Optional[int] = 0
     college: Optional[str]
     joined: Optional[datetime]
+    bookmarks: Optional[List[str]]
     badge: Optional[List[str]] = []
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
