@@ -49,9 +49,19 @@ def get_course(course_id, request: Request):
                 post_dict["id"] = post_id
                 post_dict["title"] = post_details["title"]
                 post_dict["type"] = post_details["type"]
-                if post_dict["type"] == "video":
-                    progress = pro.collection(u"progress").document(course_id).get().to_dict()
-                    post_dict["progress"] = progress["post_progress"][post_id]
+                progress = pro.collection(u"progress").document(course_id).get().to_dict()
+
+                if progress is not None:
+
+                    if post_dict["type"] == "video":
+                        progress = pro.collection(u"progress").document(course_id).get().to_dict()
+                        o = 0
+                        try:
+                            o = progress["post_progress"][post_id]
+                        except KeyError:
+                            pass
+
+                        post_dict["progress"] = o
 
                 chapter_dict["posts"].append(post_dict)
             chapter_dict["id"] = chapter.id
