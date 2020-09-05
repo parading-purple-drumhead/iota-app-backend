@@ -120,13 +120,11 @@ def get_user_info(user_id):
             li = list(v)
 
             cp = db.collection("users").document(user_id).get().to_dict()
-            var = cp["course_progress"].values()
-            pp = list(var)
-
+            var = cp["course_progress"]
             cp_updated = {}
             j = 0
-            for j in li:
-                cp_updated.update({li[j]: pp[j]})
+            for i in li:
+                cp_updated.update({li[j]: var[li[j]]})
                 j = j + 1
 
             del user["course_progress"]
