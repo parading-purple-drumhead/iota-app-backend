@@ -15,12 +15,6 @@ def get_all_courses():
         for course in courses:
             course_ref = courses_ref.document(course.id)
             course_doc = course_ref.get().to_dict()
-            # chapters = course_ref.collection(u"chapters").get()
-            # course_doc["chapters"] = []
-            # for chapter in chapters:
-            #     chapter_dict = chapter.to_dict()
-            #     chapter_dict["id"] = chapter.id
-            #     course_doc["chapters"].append(chapter_dict)
             data[course.id] = course_doc
         return data
 
