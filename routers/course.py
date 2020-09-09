@@ -53,7 +53,7 @@ def get_course(course_id, request: Request):
 
                 if progress is not None:
 
-                    if post_dict["type"] == "video":
+                    if post_dict["type"] == "video" or "quiz":
                         progress = pro.collection(u"progress").document(course_id).get().to_dict()
                         o = 0
                         try:
