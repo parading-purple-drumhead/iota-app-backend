@@ -191,10 +191,6 @@ def progress(request: Request, course_id, progress: Progress):
         activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
         today = str(datetime.date.today())
         pointt = int(progress.points)
-        course_ref = db.collection(u"courses").document(course_id)
-        course_ref.update({
-            u"bookmarked_users": firestore.ArrayUnion([uid])
-        })
         activity.update({u"activity": {today: firestore.Increment(pointt)}})
 
         return {progress.post_id: progress.progress}

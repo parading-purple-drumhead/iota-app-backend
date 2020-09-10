@@ -56,7 +56,7 @@ class Course(BaseModel):
     rating: Optional[float] = 0.0
     chapters: Optional[List[Chapter]] = []
     recommended_courses: Optional[List[str]] = []
-    bookmarked_users: Optional[List[str]] = []
+    notifi_users: Optional[List[str]] = []
 
 
 class Progress(BaseModel):
