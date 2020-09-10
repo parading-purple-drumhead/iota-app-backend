@@ -112,6 +112,6 @@ app.include_router(
 
 app.include_router(
     notification.router,
-    prefix="/notification" ,
+    prefix="/notification",
     tags=["Notification"]
 )
