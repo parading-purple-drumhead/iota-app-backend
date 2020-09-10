@@ -33,6 +33,7 @@ class Post(BaseModel):
     content: Optional[str]
     questions: Optional[Dict[str, Question]] = []
     progress: Optional[float]
+    length: Optional[int]
 
 
 class Badge(BaseModel):
