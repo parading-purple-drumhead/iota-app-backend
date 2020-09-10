@@ -13,7 +13,7 @@ def add_bookmark(bookmark: Bookmark, request: Request):
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid)
         bookmarks_ref = user.collection(u"bookmarks")
-        bookmarks_ref.add(dict(bookmark), document_id = bookmark.course_id)
+        bookmarks_ref.add(dict(bookmark), document_id=bookmark.course_id)
 
     except Exception as e:
         print(e)

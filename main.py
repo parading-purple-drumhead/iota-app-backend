@@ -25,7 +25,8 @@ tags_metadata = [
         "name": "Badge",
         "description": "Endpoints related to operations on the **Badge**\
             collection."
-    },{
+    },
+    {
         "name": "Notification",
         "description": "Endpoints related to operations on the **Notification**\
             collection."
@@ -111,6 +112,6 @@ app.include_router(
 
 app.include_router(
     notification.router,
-    prefix="/notification",
+    prefix="/notification" ,
     tags=["Notification"]
 )
