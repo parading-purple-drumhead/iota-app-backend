@@ -4,6 +4,8 @@ from routers import db
 from google.api_core.exceptions import AlreadyExists
 from firebase_admin import firestore
 import datetime
+from dateutil.relativedelta import relativedelta
+import calendar
 
 router = APIRouter()
 
@@ -194,6 +196,95 @@ def progress(request: Request, course_id, progress: Progress):
         activity.update({u"activity": {today: firestore.Increment(pointt)}})
 
         return {progress.post_id: progress.progress}
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/activity")
+def activity(request: Request):
+    try:
+        uid = request.headers.get("uid")
+        act = db.collection(u"users").document(uid).get().to_dict()
+        act = act["activity"]
+        daily = {}
+        today = datetime.datetime.now()
+        for i in range(7):
+            sdate = datetime.timedelta(days=i)
+            var1 = today-sdate
+            date = str(var1.date())
+            if(date not in act.keys()):
+                daily.update({date: 0})
+            else:
+                daily.update({date: act[date]})
+
+        listofdates = []
+        today = today.date()
+        sdate = today - relativedelta(months=+6)
+        sdate = sdate.replace(day=1)
+        delta = today - sdate
+
+        for i in range(delta.days + 1):
+            day = sdate + relativedelta(days=i)
+            listofdates.append(day)
+
+        listwithvalues = {}
+        monthly = {}
+        for i in listofdates:
+            j = i
+            i = i.strftime("%Y-%m-%d").replace("-0", "-")
+            i = str(i)
+
+            try:
+                j = str(j)
+                listwithvalues[i] = act[j]
+            except KeyError:
+                listwithvalues[i] = 0
+
+        months = set()
+        for a in listwithvalues:
+            y, m, d = a.split("-")
+            months.add(m)
+        months = list(months)
+        months.sort()
+        values = [0]*7
+        for i in listwithvalues:
+            j = i
+            y, month, d = i.split("-")
+            if(month in months):
+                var1 = values[months.index(month)]
+                values[months.index(month)] = var1 + listwithvalues[j]
+        for i in range(7):
+            j = int(months[i])
+            monthly[calendar.month_name[j]] = values[i]
+        weeks = {}
+        result = []
+        for i in range(49):
+            dates = datetime.timedelta(days=i)
+            dat = today - dates
+            result.append(dat)
+        a = 0
+        b = 7
+        for i in range(7):
+            sum = 0
+            for j in range(a, b):
+                try:
+                    var = result[j]
+                    var = str(var)
+                    var = act[var]
+                except KeyError:
+                    var = 0
+                sum = sum + var
+            m = result[j]
+            a = a + 7
+            b = b + 7
+            weeks.update({m: sum})
+        total = {}
+        total.update({"Daily": daily})
+        total.update({"Weekly": weeks})
+        total.update({"Monthly": monthly})
+        return total
 
     except Exception as e:
         print(e)
