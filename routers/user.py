@@ -251,10 +251,10 @@ def activity(request: Request):
         values = [0]*7
         for i in listwithvalues:
             j = i
-            y, M, d = i.split("-")
-            if(M in months):
-                var1 = values[months.index(M)]
-                values[months.index(M)] = var1 + listwithvalues[j]
+            y, month, d = i.split("-")
+            if(month in months):
+                var1 = values[months.index(month)]
+                values[months.index(month)] = var1 + listwithvalues[j]
         for i in range(7):
             j = int(months[i])
             monthly[calendar.month_name[j]] = values[i]
