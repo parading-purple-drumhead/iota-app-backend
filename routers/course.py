@@ -60,6 +60,13 @@ def get_course(course_id, request: Request):
                 chapter_dict["posts"].append(post_dict)
             chapter_dict["id"] = chapter.id
             course["chapters"].append(chapter_dict)
+
+            notify = course["notify_user"]
+            if uid in notify:
+                course["notify"] = True
+            else:
+                course["notify"] = False
+
         return course
 
     except Exception as e:
