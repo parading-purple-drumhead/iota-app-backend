@@ -28,7 +28,7 @@ def get_course(course_id, request: Request):
     try:
         course_ref = db.collection(u"courses").document(course_id)
         course = course_ref.get().to_dict()
-        chapters = course_ref.collection(u"chapters").order_by(u'order_no').get()
+        chapters = course_ref.collection(u"chapters").order_by(u"order_no").get()
         course["chapters"] = []
         uid = request.headers.get("uid")
         pro = db.collection(u"users").document(uid)
