@@ -47,6 +47,7 @@ class Chapter(BaseModel):
     title: Optional[str]
     post_ids: Optional[List[str]] = []
     posts: Optional[List[Post]] = []
+    order_no: Optional[int]
 
 
 class Course(BaseModel):
