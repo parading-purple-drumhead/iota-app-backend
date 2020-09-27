@@ -61,7 +61,7 @@ def get_course(course_id, request: Request):
             chapter_dict["id"] = chapter.id
             course["chapters"].append(chapter_dict)
 
-            notify = course["notify_user"]
+            notify = course["notifi_user"]
             if uid in notify:
                 course["notify"] = True
             else:
