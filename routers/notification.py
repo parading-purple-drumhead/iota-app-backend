@@ -16,7 +16,7 @@ def notifi_user(course_id, request: Request):
             if(bookmark_dict["type"] == "courses"):
                 course_ref = db.collection(u"courses").document(course_id)
                 course_ref.update({
-                    u"notifi_users": firestore.ArrayUnion([uid])
+                    u"notify_users": firestore.ArrayUnion([uid])
                 })
             else:
                 return Exception()
@@ -33,7 +33,7 @@ def remove_notifi_user(course_id, request: Request):
         uid = request.headers.get("uid")
         course_ref = db.collection(u"courses").document(course_id)
         course_ref.update({
-            u"notifi_users": firestore.ArrayRemove([uid])
+            u"notify_users": firestore.ArrayRemove([uid])
         })
 
     except Exception as e:
