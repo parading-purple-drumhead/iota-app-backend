@@ -65,7 +65,7 @@ def remove_bookmark(request: Request, course_id):
         if(bookmark_dict["type"] == "courses"):
             course_ref = db.collection(u"courses").document(course_id)
             course_ref.update({
-                u"bookmarked_users": firestore.ArrayRemove([uid])
+                u"notify_user": firestore.ArrayRemove([uid])
             })
         bookmark_ref.delete()
 
