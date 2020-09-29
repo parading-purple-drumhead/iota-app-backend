@@ -39,7 +39,7 @@ class Post(BaseModel):
 class Badge(BaseModel):
     image: Optional[str]
     name: Optional[str]
-    requirement: Optional[str]
+    requirement: Optional[int]
 
 
 class Chapter(BaseModel):
@@ -76,7 +76,7 @@ class User(BaseModel):
     points: Optional[int] = 0
     college: Optional[str]
     joined: Optional[datetime]
-    badge: Optional[List[str]] = []
+    badge: Optional[Badge]
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
     course_progress: Optional[Dict[str, float]] = None
@@ -92,7 +92,7 @@ class ReturnUser(BaseModel):
     points: Optional[int] = 0
     college: Optional[str]
     joined: Optional[datetime]
-    badge: Optional[List[str]] = []
+    badge: Optional[Badge]
     bookmarks: Optional[List[str]]
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
