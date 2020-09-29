@@ -6,6 +6,34 @@ from typing import Dict
 router = APIRouter()
 
 
+# @router.get("/calculate", response_model=Badge)
+def calculate_badge(uid):
+    try:
+        # uid = request.headers.get("uid")
+        user_ref = db.collection(u"users").document(uid)
+        user = user_ref.get().to_dict()
+
+        badges = []
+        badge_points = []
+        badges_ref = db.collection(u"badges").get()
+        for badge_ref in badges_ref:
+            badge = badge_ref.to_dict()
+            badge_points.append(badge["requirement"])
+            badges.append(badge)
+
+        index = 0
+        for i in range(len(badge_points)):
+            if(user["points"] >= badge_points[i] and user["points"] < badge_points[i+1]):
+                index = i
+                break
+
+        return badges[index]
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=e)
+
+
 @router.get("", response_model=Dict[str, Badge])
 def get_all_badge():
     try:

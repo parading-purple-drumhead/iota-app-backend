@@ -2,12 +2,34 @@ from fastapi import APIRouter, HTTPException, Request
 from typing import Dict, List
 from models import Post, Comment, Question, Quiz
 from firebase_admin import firestore
-from routers import db
+from routers import db, send_message_to_topic
 from datetime import datetime
 from pytz import timezone
 import random
+import uuid
 
 router = APIRouter()
+
+
+@router.post("/notification")
+def test_notification():
+    try:
+        notification = {
+            "title": "Notification title",
+            "body": "Notification body"
+        }
+        data = {
+            "notification_key": str(uuid.uuid4()),
+            "title": "Data title",
+            "body": "Data body",
+            "message": "Test message",
+            "click_action": "FLUTTER_NOTIFICATION_CLICK"
+        }
+        topic = "8M49paQ1g5MJwcWlv4VIGBADjff1"
+        send_message_to_topic(notification, data, topic)
+
+    except Exception as e:
+        return e
 
 
 @router.get("", response_model=Dict[str, Post])
@@ -97,6 +119,25 @@ def add_post(post: Post, request: Request, course_id, chapter_id):
             chapter.update({
                 u"post_ids": firestore.ArrayUnion([post_ref[1].id])
             })
+
+            course = course_ref.get().to_dict()
+            topics = course["notify_users"]
+            print(topics)
+
+            for topic in topics:
+                notification = {
+                    "title": "New post added to "+course["name"],
+                    "body": "Post title: "+post.title
+                }
+                data = {
+                    "notification_key": str(uuid.uuid4()),
+                    "title": "New post added to "+course["name"],
+                    "body": "Post title: "+post.title,
+                    "message": "Check it out now",
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                }
+                send_message_to_topic(notification, data, topic)
+                print("Sent notification to:", topic)
 
         else:
             raise Exception()

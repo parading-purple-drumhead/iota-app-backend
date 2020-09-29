@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from models import User, ReturnUser, Progress
 from routers import db
+from routers.badge import calculate_badge
 from google.api_core.exceptions import AlreadyExists
 from firebase_admin import firestore
 import datetime
@@ -132,6 +133,8 @@ def get_user_info(user_id):
 
         else:
             user["updated_at"] = {}
+
+        user["badge"] = calculate_badge(user_id)
 
         return user
 

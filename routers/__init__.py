@@ -15,8 +15,10 @@ def tokenverify(safe):
 
 def send_message_to_topic(notification, data, topic):
     try:
-        message = messaging.Message(notification=notification, data=data, topic=topic)
+        message = messaging.Message(notification=messaging.Notification(
+            title=notification["title"], body=notification["body"]), data=data, topic=topic)
         response = messaging.send(message)
         print(response)
+
     except Exception as e:
         return (e)
