@@ -7,6 +7,7 @@ from firebase_admin import firestore
 import datetime
 from dateutil.relativedelta import relativedelta
 import calendar
+from collections import OrderedDict
 
 router = APIRouter()
 
@@ -89,9 +90,7 @@ def recommended_course(user_id):
 
 @router.get("/activity")
 def activity(request: Request):
-    print("one")
     try:
-        print("one")
         uid = request.headers.get("uid")
         act = db.collection(u"users").document(uid).get().to_dict()
         act = act["activity"]
@@ -140,16 +139,19 @@ def activity(request: Request):
         months = set()
         for a in listwithvalues:
             y, m, d = a.split("-")
-            months.add(m)
-        months = list(months)
-        months.sort()
+            months.add(int(m))
+
+        months = sorted(months)
+
         values = [0]*7
         for i in listwithvalues:
             j = i
             y, month, d = i.split("-")
+            month = int(month)
             if(month in months):
-                var1 = values[months.index(month)]
-                values[months.index(month)] = var1 + listwithvalues[j]
+                var1 = values[months.index(int(month))]
+                values[months.index(int(month))] = var1 + listwithvalues[j]
+
         for i in range(7):
             j = int(months[i])
             monthly[calendar.month_name[j]] = values[i]
@@ -176,6 +178,8 @@ def activity(request: Request):
             a = a + 7
             b = b + 7
             weeks.update({m: sum})
+        weeks = OrderedDict(sorted(weeks.items()))
+        daily = OrderedDict(sorted(daily.items()))
         total = {}
         total.update({"Daily": daily})
         total.update({"Weekly": weeks})
