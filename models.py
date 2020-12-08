@@ -97,6 +97,7 @@ class ReturnUser(BaseModel):
     activity: Optional[Dict[str, int]] = None
     recommended_course: Optional[List[str]] = None
     course_progress: Optional[Dict[str, float]] = None
+    quiz_progress: Optional[List[str]] = None
 
 
 class Quiz(BaseModel):
