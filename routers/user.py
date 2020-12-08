@@ -12,6 +12,22 @@ from collections import OrderedDict
 router = APIRouter()
 
 
+def count_completed(d):
+    keys = 0
+    values = 0
+    for item in d.keys():
+        if isinstance(d[item], (dict)):
+            keys += 1
+            k, v = count_completed(d[item])
+            values += v
+            keys += k
+        else:
+            keys += 1
+            values += 1
+
+    return keys, values
+
+
 def cprogress(user_id):
     try:
         update = db.collection(u"users").document(user_id).collection(u"progress").stream()
@@ -37,18 +53,9 @@ def cprogress(user_id):
             up = db.collection(u"users").document(user_id)
             update = up.collection(u"progress").document(courses[j])
             edit = update.get().to_dict()
-            post_count = len(edit["post_progress"])
-            post_completed = 0
-            k = 0
-            for k in range(post_count):
-                if list(edit["post_progress"].values())[k] == "1":
-                    post_completed = post_completed + 1
-
-                k = k + 1
-
-            course_progress = post_completed/post_c
+            f, post_completed = count_completed(edit)
+            course_progress = post_completed / post_c
             user.set({u"course_progress": {courses[j]: course_progress}}, merge=True)
-
             j = j + 1
 
     except Exception as e:
@@ -296,12 +303,17 @@ def progress(request: Request, course_id, progress: Progress):
         uid = request.headers.get("uid")
         activity = db.collection(u"users").document(uid)
         update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
-        update.set({u"post_progress": {progress.post_id: progress.progress}}, merge=True)
+        type_of_post = db.collection(u"posts").document(progress.post_id).get().to_dict()
+        if(type_of_post["type"] == "quiz"):
+            update.set({u"quiz_progress": {progress.post_id: progress.progress}}, merge=True)
+        elif(type_of_post["type"] == "video"):
+            update.set({u"video_progress": {progress.post_id: progress.progress}}, merge=True)
+        elif(type_of_post["type"] == "article"):
+            update.set({u"article_progress": {progress.post_id: progress.progress}}, merge=True)
         activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
         today = str(datetime.date.today())
         pointt = int(progress.points)
         activity.update({u"activity": {today: firestore.Increment(pointt)}})
-
         return {progress.post_id: progress.progress}
 
     except Exception as e:
