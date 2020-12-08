@@ -34,6 +34,7 @@ def cprogress(user_id):
         user = db.collection("users").document(user_id)
         courses = []
         j = 0
+        quiz = []
         for cprogress in update:
             courses.append(cprogress.id)
             count = db.collection(u"courses").document(courses[j]).collection("chapters").stream()
@@ -57,10 +58,18 @@ def cprogress(user_id):
             course_progress = post_completed / post_c
             user.set({u"course_progress": {courses[j]: course_progress}}, merge=True)
             j = j + 1
+            try:
+                for i in edit["quiz_progress"].keys():
+                    quiz.append(i)
+
+            except KeyError as e:
+                print(e)
 
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
+
+    return quiz
 
 
 def recommended_course(user_id):
@@ -203,7 +212,7 @@ def get_user_info(user_id):
 
     try:
         recommended_course(user_id)
-        cprogress(user_id)
+        q = cprogress(user_id)
         user_ref = db.collection(u"users").document(user_id)
         user = user_ref.get().to_dict()
 
@@ -248,6 +257,8 @@ def get_user_info(user_id):
             user["updated_at"] = {}
 
         user["badge"] = calculate_badge(user_id)
+
+        user["quiz_progress"] = q
 
         return user
 
