@@ -57,7 +57,7 @@ class Course(BaseModel):
     rating: Optional[float] = 0.0
     chapters: Optional[List[Chapter]] = []
     recommended_courses: Optional[List[str]] = []
-    notify_user: Optional[List[str]] = []
+    notify_users: Optional[List[str]] = []
     notify: Optional[bool]
 
 
