@@ -286,6 +286,11 @@ def add_user(user_id, user: User):
     try:
         user_ref = db.collection(u"users")
         user_ref.add(dict(user), document_id=user_id)
+        a = "ZuZzQItxdll0ZtJS4KJy"
+        b = "3dzwYzAwGM052ZAsIGrP"
+        addreco = db.collection(u"users").document(user_id)
+        addreco.update({u"recommended_course": firestore.ArrayUnion([a])})
+        addreco.update({u"recommended_course": firestore.ArrayUnion([b])})
 
     except AlreadyExists as e:
         print(e)
