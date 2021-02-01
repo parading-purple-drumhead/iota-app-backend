@@ -286,8 +286,8 @@ def add_user(user_id, user: User):
     try:
         user_ref = db.collection(u"users")
         user_ref.add(dict(user), document_id=user_id)
-        a = "ZuZzQItxdll0ZtJS4KJy"
-        b = "3dzwYzAwGM052ZAsIGrP"
+        a = "MLVPBwIxRQ0yYKSbMAq2"
+        b = "eUqXuVM1R47tXSSzj9uQ"
         addreco = db.collection(u"users").document(user_id)
         addreco.update({u"recommended_course": firestore.ArrayUnion([a])})
         addreco.update({u"recommended_course": firestore.ArrayUnion([b])})
