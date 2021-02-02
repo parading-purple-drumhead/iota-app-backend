@@ -250,7 +250,7 @@ def edit_comment(post_id, comment_id, comment: Comment, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{post_id}/comment/{comment_id}")
+@router.post("/{post_id}/comment/{comment_id}")
 def delete_comment(post_id, comment_id, request: Request):
     try:
         post_ref = db.collection(u"posts").document(post_id)
