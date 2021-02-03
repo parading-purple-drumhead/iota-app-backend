@@ -259,6 +259,9 @@ def get_user_info(user_id):
         user["badge"] = calculate_badge(user_id)
 
         user["quiz_progress"] = q
+        act = user["activity"]
+        points = sum(act.values())
+        user["points"] = points
 
         return user
 
