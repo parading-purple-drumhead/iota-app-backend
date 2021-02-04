@@ -4,6 +4,7 @@ from models import Post, Comment, Question, Quiz
 from firebase_admin import firestore
 from routers import db, send_message_to_topic
 from datetime import datetime
+from datetime import date
 from pytz import timezone
 import random
 import uuid
@@ -368,9 +369,12 @@ def submit_quiz(post_id, quiz: List[Quiz], request: Request):
             results.update({"response": result})
             uid = request.headers.get("uid")
             user = db.collection(u"users").document(uid)
-            user.update({
-                u"points": firestore.Increment(mark)
-            })
+            today = str(date.today())
+            print(today)
+            act = user.get().to_dict()
+            mark = mark + act["activity"][today]
+            print(mark)
+            user.update({u"activity": {today: mark}})
 
             results.update({"mark": mark})
             return results
