@@ -323,16 +323,30 @@ def progress(request: Request, course_id, progress: Progress):
         activity = db.collection(u"users").document(uid)
         update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
         type_of_post = db.collection(u"posts").document(progress.post_id).get().to_dict()
+        data = update.get().to_dict()
         if(type_of_post["type"] == "quiz"):
             update.set({u"quiz_progress": {progress.post_id: progress.progress}}, merge=True)
+            activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
+            today = str(datetime.date.today())
+            pointt = int(progress.points)
+            activity.update({u"activity": {today: firestore.Increment(pointt)}})
+
         elif(type_of_post["type"] == "video"):
-            update.set({u"video_progress": {progress.post_id: progress.progress}}, merge=True)
+            if data is None or (data["video_progress"][progress.post_id] != "1"):
+                update.set({u"video_progress": {progress.post_id: progress.progress}}, merge=True)
+                activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
+                today = str(datetime.date.today())
+                pointt = int(progress.points)
+                activity.update({u"activity": {today: firestore.Increment(pointt)}})
+            else:
+                return("Video Already Seen")
+
         elif(type_of_post["type"] == "article"):
             update.set({u"article_progress": {progress.post_id: progress.progress}}, merge=True)
-        activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
-        today = str(datetime.date.today())
-        pointt = int(progress.points)
-        activity.update({u"activity": {today: firestore.Increment(pointt)}})
+            activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
+            today = str(datetime.date.today())
+            pointt = int(progress.points)
+            activity.update({u"activity": {today: firestore.Increment(pointt)}})
         return {progress.post_id: progress.progress}
 
     except Exception as e:
