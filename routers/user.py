@@ -332,7 +332,7 @@ def progress(request: Request, course_id, progress: Progress):
             activity.update({u"activity": {today: firestore.Increment(pointt)}})
 
         elif(type_of_post["type"] == "video"):
-            if(data == None) or (data["video_progress"][progress.post_id] != '1'):
+            if data is None or (data["video_progress"][progress.post_id] != "1"):
                 update.set({u"video_progress": {progress.post_id: progress.progress}}, merge=True)
                 activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
                 today = str(datetime.date.today())
