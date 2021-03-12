@@ -54,6 +54,7 @@ class Course(BaseModel):
     description: Optional[str]
     name: Optional[str]
     image: Optional[str]
+    image2: Optional[str]
     rating: Optional[float] = 0.0
     chapters: Optional[List[Chapter]] = []
     recommended_courses: Optional[List[str]] = []
