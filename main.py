@@ -3,7 +3,7 @@ from fastapi.responses import Response
 from fastapi.exceptions import RequestValidationError, ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from routers import post, course, chapter, user, badge, bookmark, notification
-from firebase_admin import auth
+# from firebase_admin import auth
 
 tags_metadata = [
     {
@@ -44,7 +44,7 @@ app = FastAPI(
 @app.middleware("http")
 async def verify_token(request: Request, call_next):
     try:
-        exclude = ["/docs", "/openapi.json"]
+        # exclude = ["/docs", "/openapi.json"]
 
         # if request.url.path not in exclude:
         #     token = request.headers.get("token")
