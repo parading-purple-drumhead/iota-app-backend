@@ -167,10 +167,16 @@ def activity(request: Request):
             if(month in months):
                 var1 = values[months.index(int(month))]
                 values[months.index(int(month))] = var1 + listwithvalues[j]
-
+        random = datetime.datetime.now()
+        print(values)
         for i in range(7):
             j = int(months[i])
-            monthly[calendar.month_name[j]] = values[i]
+            count = random.month-7+i
+            if count < 0:
+                monthly[calendar.month_name[count]] = values[count]
+
+        for q in range(1, 7-random.month):
+            monthly[calendar.month_name[q]] = values[q-1]
 
         weeks = {}
         result = []
