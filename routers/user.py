@@ -213,9 +213,22 @@ def activity(request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/admin")
+def is_admin(request: Request):
+    try:
+        uid = request.headers.get("uid")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            return True
+        else:
+            raise Exception('Unauthorized')
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
 @router.get("/{user_id}", response_model=ReturnUser)
 def get_user_info(user_id):
-
     try:
         recommended_course(user_id)
         q = cprogress(user_id)
