@@ -175,7 +175,7 @@ def activity(request: Request):
             if count < 0:
                 monthly[calendar.month_name[count]] = values[count]
 
-        for q in range(1,7-random.month):
+        for q in range(1, 7-random.month):
             monthly[calendar.month_name[q]] = values[q-1]
 
         weeks = {}
