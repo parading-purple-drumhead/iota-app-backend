@@ -221,7 +221,7 @@ def is_admin(request: Request):
         if user["admin"]:
             return True
         else:
-            raise Exception('Unauthorized')
+            raise Exception("Unauthorized")
 
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
