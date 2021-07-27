@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from fastapi.exceptions import RequestValidationError, ValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from routers import post, course, chapter, user, badge, bookmark, notification
 from firebase_admin import auth
@@ -40,13 +41,23 @@ app = FastAPI(
     openapi_tags=tags_metadata
 )
 
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.middleware("http")
 async def verify_token(request: Request, call_next):
     try:
         exclude = ["/docs", "/openapi.json"]
 
-        if request.url.path not in exclude:
+        if request.method != "OPTIONS" and request.url.path not in exclude:
             token = request.headers.get("token")
             uid = request.headers.get("uid")
             if auth.verify_id_token(token)["uid"] != uid:

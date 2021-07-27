@@ -79,6 +79,7 @@ def add_course(course: Course, request: Request):
     try:
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid).get().to_dict()
+
         if user["admin"]:
             courses_ref = db.collection(u"courses")
             courses_ref.add(dict(course))
