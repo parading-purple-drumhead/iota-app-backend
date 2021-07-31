@@ -107,7 +107,7 @@ def get_post(post_id, request: Request):
 
 
 @router.get("/admin/{post_id}")
-def get_post(post_id, request: Request):
+def get_post_admin(post_id, request: Request):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
         if post["type"] == "quiz":
