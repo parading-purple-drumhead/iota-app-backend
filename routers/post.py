@@ -106,6 +106,38 @@ def get_post(post_id, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/admin/{post_id}")
+def get_post(post_id, request: Request):
+    try:
+        post = db.collection(u"posts").document(post_id).get().to_dict()
+        if post["type"] == "quiz":
+            ques_postid = db.collection(u"questionbank").document(post_id)
+            question_ref = ques_postid.collection("questions").stream()
+            data = {}
+            for question in question_ref:
+                data[question.id] = question.to_dict()
+
+            ques_postid = db.collection(u"questionbank").document(post_id)
+            question_ref = ques_postid.collection("questions").stream()
+            data = {}
+            for question in question_ref:
+                data[question.id] = question.to_dict()
+
+            post["questions"] = data
+            return post
+
+        else:
+            post_ref = db.collection(u"posts").document(post_id)
+            post = post_ref.get().to_dict()
+            return post
+
+        raise Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/add/{course_id}/{chapter_id}")
 def add_post(post: Post, request: Request, course_id, chapter_id):
     try:
