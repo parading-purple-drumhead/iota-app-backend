@@ -12,6 +12,49 @@ import uuid
 router = APIRouter()
 
 
+@router.put("/{post_id}/question/{question_id}")
+def edit_question(post_id, question_id, question: Question, request: Request):
+    try:
+        uid = request.headers.get("uid")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            if post["type"] == "quiz":
+                ques_postid = db.collection(u"questionbank").document(post_id)
+                question_ref = ques_postid.collection("questions").document(question_id)
+                new = question.dict(exclude_none=True, exclude_defaults=True)
+                question_ref.update(new)
+            else:
+                raise Exception()
+        else:
+            raise Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/{post_id}/question/{question_id}")
+def delete_question(question_id, post_id, request: Request):
+    try:
+        uid = request.headers.get("uid")
+        user = db.collection(u"users").document(uid).get().to_dict()
+        if user["admin"]:
+            post = db.collection(u"posts").document(post_id).get().to_dict()
+            print(post)
+            if post["type"] == "quiz":
+                ques_postid = db.collection(u"questionbank").document(post_id)
+                ques_postid.collection("questions").document(question_id).delete()
+            else:
+                raise Exception()
+        else:
+            raise Exception()
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/notification")
 def test_notification():
     try:
@@ -335,48 +378,6 @@ def get_all_question(post_id):
             return data
         else:
             return Exception()
-
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.delete("/{post_id}/question/{question_id}")
-def delete_question(question_id, post_id, request: Request):
-    try:
-        uid = request.headers.get("uid")
-        user = db.collection(u"users").document(uid).get().to_dict()
-        if user["admin"]:
-            post = db.collection(u"posts").document(post_id).get().to_dict()
-            if post["type"] == "quiz":
-                ques_postid = db.collection(u"questionbank").document(post_id)
-                ques_postid.collection("questions").document(question_id).delete()
-            else:
-                raise Exception()
-        else:
-            raise Exception()
-
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.put("/{post_id}/question/{question_id}")
-def edit_question(post_id, question_id, question: Question, request: Request):
-    try:
-        uid = request.headers.get("uid")
-        user = db.collection(u"users").document(uid).get().to_dict()
-        if user["admin"]:
-            post = db.collection(u"posts").document(post_id).get().to_dict()
-            if post["type"] == "quiz":
-                ques_postid = db.collection(u"questionbank").document(post_id)
-                question_ref = ques_postid.collection("questions").document(question_id)
-                new = question.dict(exclude_none=True, exclude_defaults=True)
-                question_ref.update(new)
-            else:
-                raise Exception()
-        else:
-            raise Exception()
 
     except Exception as e:
         print(e)
