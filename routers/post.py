@@ -405,7 +405,11 @@ def submit_quiz(post_id, quiz: List[Quiz], request: Request):
             today = str(date.today())
             print(today)
             act = user.get().to_dict()
-            mark = mark + act["activity"][today]
+            if act["activity"] is None:
+                print("yes")
+                user.update({u"activity": {today: 0}})
+            user_act = user.get().to_dict()
+            mark = mark + user_act["activity"][today]
             print(mark)
             user.update({u"activity": {today: mark}})
 
