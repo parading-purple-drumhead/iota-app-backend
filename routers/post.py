@@ -405,7 +405,7 @@ def submit_quiz(post_id, quiz: List[Quiz], request: Request):
             today = str(date.today())
             print(today)
             act = user.get().to_dict()
-            if act["activity"] == None:
+            if act["activity"] is None:
                 print("yes")
                 user.update({u"activity": {today: 0}})
             user_act = user.get().to_dict()
