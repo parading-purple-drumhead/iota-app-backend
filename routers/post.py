@@ -94,6 +94,7 @@ def get_all_posts():
 def get_post(post_id, request: Request):
     try:
         post = db.collection(u"posts").document(post_id).get().to_dict()
+        # print(post)
         if post["type"] == "quiz":
             doc = db.collection(u"questionbank").document(post_id)
             random_ref = doc.collection(u"questions")
@@ -101,6 +102,7 @@ def get_post(post_id, request: Request):
             data = {}
             easy = random_ref.where(u"difficulty", u"==", u"easy")
             easy_ref = easy.order_by("number").limit(2).stream()
+            print(easy_ref)
             for info in easy_ref:
                 info_dict = info.to_dict()
                 del info_dict["answer"]
@@ -385,8 +387,9 @@ def get_all_question(post_id):
 
 
 @router.post("/{post_id}/submit")
-def submit_quiz(post_id, quiz: List[Quiz], request: Request):
+async def submit_quiz(post_id,  request: Request):
     try:
+        quiz = await request.json()
         result = []
         results = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()
@@ -394,9 +397,9 @@ def submit_quiz(post_id, quiz: List[Quiz], request: Request):
             doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
-                doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
-                result.append({"question_id": quiz[i].question_id, "answer": doc_ref["answer"][0]})
-                if doc_ref["answer"][0] == quiz[i].answer:
+                doc_ref = doc.collection("questions").document(quiz[i]["question_id"]).get().to_dict()
+                result.append({"question_id": quiz[i]["question_id"], "answer": doc_ref["answer"][0]})
+                if doc_ref["answer"][0] == quiz[i]["answer"]:
                     mark += 1
 
             results.update({"response": result})
