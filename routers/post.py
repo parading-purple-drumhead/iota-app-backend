@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
-from typing import Dict, List
-from models import Post, Comment, Question, Quiz
+from typing import Dict
+from models import Post, Comment, Question
 from firebase_admin import firestore
 from routers import db, send_message_to_topic
 from datetime import datetime
