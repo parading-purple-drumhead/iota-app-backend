@@ -288,7 +288,7 @@ def get_comment(post_id):
 
 
 @router.post("/{post_id}/comment")
-def add_comment(post_id, comment: Comment, request: Request):
+async def add_comment(post_id: str, request: Request, comment: Comment):
     try:
         doc_ref = db.collection(u"posts")
         doc = doc_ref.document(post_id).collection(u"comments")
@@ -304,6 +304,7 @@ def add_comment(post_id, comment: Comment, request: Request):
             comment_dict["user_avatar"] = user["avatar"]
             comment_dict["id"] = comment.id
             comments.append(comment_dict)
+        return comments
 
     except Exception as e:
         print(e)
