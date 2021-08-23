@@ -414,7 +414,7 @@ async def submit_quiz(post_id, quiz: List[Quiz], request: Request):
                 user.update({u"activity": {today: 0}})
             user_act = user.get().to_dict()
             final_mark = mark + user_act["activity"][today]
-            print("User before update:",user_act)
+            print("User before update:", user_act)
             activity_dict = user_act["activity"]
             activity_dict[today] = final_mark
             user.update({u"activity": activity_dict})
