@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
-from typing import Dict
-from models import Post, Comment, Question
+from typing import Dict, List
+from models import Post, Comment, Question, Quiz
 from firebase_admin import firestore
 from routers import db, send_message_to_topic
 from datetime import datetime
@@ -388,9 +388,9 @@ def get_all_question(post_id):
 
 
 @router.post("/{post_id}/submit")
-async def submit_quiz(post_id,  request: Request):
+async def submit_quiz(post_id, quiz: List[Quiz], request: Request):
     try:
-        quiz = await request.json()
+        # quiz = await request.json()
         result = []
         results = {}
         post = db.collection(u"posts").document(post_id).get().to_dict()
@@ -398,9 +398,9 @@ async def submit_quiz(post_id,  request: Request):
             doc = db.collection(u"questionbank").document(post_id)
             mark = 0
             for i in range(len(quiz)):
-                doc_ref = doc.collection("questions").document(quiz[i]["question_id"]).get().to_dict()
-                result.append({"question_id": quiz[i]["question_id"], "answer": doc_ref["answer"][0]})
-                if doc_ref["answer"][0] == quiz[i]["answer"]:
+                doc_ref = doc.collection("questions").document(quiz[i].question_id).get().to_dict()
+                result.append({"question_id": quiz[i].question_id, "answer": doc_ref["answer"][0]})
+                if doc_ref["answer"][0] == quiz[i].answer:
                     mark += 1
 
             results.update({"response": result})
@@ -413,9 +413,11 @@ async def submit_quiz(post_id,  request: Request):
                 print("yes")
                 user.update({u"activity": {today: 0}})
             user_act = user.get().to_dict()
-            mark = mark + user_act["activity"][today]
-            print(mark)
-            user.update({u"activity": {today: mark}})
+            final_mark = mark + user_act["activity"][today]
+            print("User before update:",user_act)
+            activity_dict = user_act["activity"]
+            activity_dict[today] = final_mark
+            user.update({u"activity": activity_dict})
 
             results.update({"mark": mark})
             return results

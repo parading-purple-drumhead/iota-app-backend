@@ -158,7 +158,7 @@ def activity(request: Request):
             months.add(int(m))
 
         months = sorted(months)
-
+        monthsinnumbers = set()
         values = [0]*7
         for i in listwithvalues:
             j = i
@@ -167,16 +167,13 @@ def activity(request: Request):
             if(month in months):
                 var1 = values[months.index(int(month))]
                 values[months.index(int(month))] = var1 + listwithvalues[j]
-        random = datetime.datetime.now()
-        print(values)
-        for i in range(7):
-            j = int(months[i])
-            count = random.month-7+i
-            if count < 0:
-                monthly[calendar.month_name[count]] = values[count]
+                monthsinnumbers.add(month)
 
-        for q in range(1, 7-random.month):
-            monthly[calendar.month_name[q]] = values[q-1]
+        monthsinnumbers = list(monthsinnumbers)
+
+        for i in range(0, 7):
+            name = calendar.month_name[monthsinnumbers[i]]
+            monthly[name] = values[i]
 
         weeks = {}
         result = []
@@ -339,33 +336,26 @@ def delete_user(user_id, request: Request):
 def progress(request: Request, course_id, progress: Progress):
     try:
         uid = request.headers.get("uid")
-        activity = db.collection(u"users").document(uid)
-        update = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
+        user_ref = db.collection(u"users").document(uid)
+        update_doc = db.collection(u"users").document(uid).collection(u"progress").document(course_id)
         type_of_post = db.collection(u"posts").document(progress.post_id).get().to_dict()
-        data = update.get().to_dict()
+        data = update_doc.get().to_dict()
         if(type_of_post["type"] == "quiz"):
-            update.set({u"quiz_progress": {progress.post_id: progress.progress}}, merge=True)
-            activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
-            today = str(datetime.date.today())
-            pointt = int(progress.points)
-            activity.update({u"activity": {today: firestore.Increment(pointt)}})
+            update_doc.set({u"quiz_progress": {progress.post_id: progress.progress}}, merge=True)
+            user_ref.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
 
         elif(type_of_post["type"] == "video"):
             if data is None or (data["video_progress"][progress.post_id] != "1"):
-                update.set({u"video_progress": {progress.post_id: progress.progress}}, merge=True)
-                activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
-                today = str(datetime.date.today())
-                pointt = int(progress.points)
-                activity.update({u"activity": {today: firestore.Increment(pointt)}})
+                update_doc.set({u"video_progress": {progress.post_id: progress.progress}}, merge=True)
+                user_ref.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
+
             else:
                 return("Video Already Seen")
 
         elif(type_of_post["type"] == "article"):
-            update.set({u"article_progress": {progress.post_id: progress.progress}}, merge=True)
-            activity.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
-            today = str(datetime.date.today())
-            pointt = int(progress.points)
-            activity.update({u"activity": {today: firestore.Increment(pointt)}})
+            update_doc.set({u"article_progress": {progress.post_id: progress.progress}}, merge=True)
+            user_ref.update({"updated_at": {course_id: firestore.SERVER_TIMESTAMP}})
+
         return {progress.post_id: progress.progress}
 
     except Exception as e:
