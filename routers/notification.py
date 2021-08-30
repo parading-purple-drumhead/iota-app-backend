@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.post("/{course_id}")
-def notifi_user(course_id, request: Request):
+def notify_user(course_id, request: Request):
     try:
         uid = request.headers.get("uid")
         user = db.collection(u"users").document(uid)
@@ -16,7 +16,7 @@ def notifi_user(course_id, request: Request):
             if(bookmark_dict["type"] == "courses"):
                 course_ref = db.collection(u"courses").document(course_id)
                 course_ref.update({
-                    u"notifi_user": firestore.ArrayUnion([uid])
+                    u"notify_users": firestore.ArrayUnion([uid])
                 })
             else:
                 return Exception()
@@ -28,12 +28,12 @@ def notifi_user(course_id, request: Request):
 
 
 @router.delete("/{course_id}")
-def remove_notifi_user(course_id, request: Request):
+def remove_notify_user(course_id, request: Request):
     try:
         uid = request.headers.get("uid")
         course_ref = db.collection(u"courses").document(course_id)
         course_ref.update({
-            u"notifi_user": firestore.ArrayRemove([uid])
+            u"notify_users": firestore.ArrayRemove([uid])
         })
 
     except Exception as e:
