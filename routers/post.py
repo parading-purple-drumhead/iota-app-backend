@@ -211,7 +211,7 @@ def add_post(post: Post, request: Request, course_id, chapter_id):
                     "notification_key": str(uuid.uuid4()),
                     "title": "New post added to "+course["name"],
                     "body": "Post title: "+post.title,
-                    "message": "Check it out now",
+                    "message":  post.title + " added to " + course["name"],
                     "click_action": "FLUTTER_NOTIFICATION_CLICK"
                 }
                 send_message_to_topic(notification, data, topic)
